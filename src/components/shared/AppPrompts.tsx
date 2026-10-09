@@ -9,6 +9,7 @@ import { CoffeeIcon } from "../../assets/icons/CoffeeIcon";
 import { PatreonIcon } from "../../assets/icons/PatreonIcon";
 import { promptDue, retirePrompt, snoozePrompt, type PromptId } from "@/lib/promptSchedule";
 import { reviewStore, reviewStoreName, reviewUrl } from "@/lib/storeReview";
+import { t } from "../../i18n/translate";
 
 function open(url: string): void {
   // The desktop renderer has no shell access, so it crosses the preload bridge.
@@ -58,8 +59,10 @@ export function AppPrompts() {
     return (
       <PromptDialog
         icon={<StarIcon />}
-        title='Enjoying Dishylink?'
-        body="A rating takes ten seconds, but it's the one thing that helps other Starlink owners find the app."
+        title={t("Enjoying Dishylink?")}
+        body={t(
+          "A rating takes ten seconds, but it's the one thing that helps other Starlink owners find the app.",
+        )}
         onLater={later}
         onNever={never}
         actions={
@@ -68,7 +71,7 @@ export function AppPrompts() {
             className='w-full cursor-pointer'
             onClick={() => acted(reviewUrl(store))}
           >
-            Rate on {reviewStoreName(store)}
+            {t("Rate on {store}", { store: reviewStoreName(store) })}
           </Button>
         }
       />
@@ -78,8 +81,10 @@ export function AppPrompts() {
   return (
     <PromptDialog
       icon={<HandHeartIcon />}
-      title='Dishylink is free, and always will be.'
-      body='I built it in my free time, because nothing like it existed. Your one-off or recurring contribution does a lot to keep it maintained and updated. Please show the project some support if you can!'
+      title={t("Dishylink is free, and always will be.")}
+      body={t(
+        "I built it in my free time, because nothing like it existed. Your one-off or recurring contribution does a lot to keep it maintained and updated. Please show the project some support if you can!",
+      )}
       onLater={later}
       onNever={never}
       actions={FUNDING.map(({ href, icon: Icon, label, iconClassName }, i) => (
@@ -95,7 +100,7 @@ export function AppPrompts() {
           onClick={() => acted(href)}
         >
           <Icon className={iconClassName} />
-          {label}
+          {t(label)}
         </Button>
       ))}
     />

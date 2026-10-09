@@ -5,6 +5,7 @@
 
 import { canonicalCause, outageEventMeta, type OutageEvent } from "@core/telemetry";
 import { formatClockTimeShort, formatEventDuration } from "../../lib/format";
+import { t } from "../../i18n/translate";
 import { EmptyState } from "../ui/empty-state";
 import { InfoDot } from "../shared/InfoDot";
 
@@ -25,14 +26,18 @@ export function OutageLog({ outageEvents }: { outageEvents: OutageEvent[] }) {
     <div className='col-span-4 min-w-0 rounded-xl bg-card px-[18px] py-4'>
       <div className='mb-2.5 flex items-center justify-between gap-3'>
         <span className='text-[16px] font-semibold tracking-[0.005em] text-foreground'>
-          Events &amp; outages
+          {t("Events & outages")}
         </span>
         <span className='text-[12px] font-medium text-muted-foreground'>
-          {newestFirst.length} events
+          {newestFirst.length === 1
+            ? t("{count} event", { count: newestFirst.length })
+            : t("{count} events", { count: newestFirst.length })}
         </span>
       </div>
       {newestFirst.length === 0 ? (
-        <EmptyState className='py-[18px]'>no outages recorded in the current window</EmptyState>
+        <EmptyState className='py-[18px]'>
+          {t("no outages recorded in the current window")}
+        </EmptyState>
       ) : (
         <div className='thin-scroll flex max-h-[240px] flex-col overflow-y-auto'>
           {newestFirst.map((outage) => {
@@ -51,9 +56,9 @@ export function OutageLog({ outageEvents }: { outageEvents: OutageEvent[] }) {
                     style={{ background: `var(${SEVERITY_COLOR_VAR[outage.severity]})` }}
                   />
                   <span className='overflow-hidden text-ellipsis whitespace-nowrap text-foreground'>
-                    {meta.label}
+                    {t(meta.label)}
                   </span>
-                  {meta.tip && <InfoDot tip={meta.tip} />}
+                  {meta.tip && <InfoDot tip={t(meta.tip)} />}
                 </span>
                 <span className='font-mono text-[10.5px] whitespace-nowrap text-muted-foreground tabular-nums'>
                   {formatEventDuration(outage.durationMs)}

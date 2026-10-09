@@ -6,6 +6,7 @@
 // stopping, since a window may run into the next day.
 
 import { useRef, useState } from "react";
+import { t } from "../../i18n/translate";
 import NumberFlow from "@number-flow/react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -149,7 +150,7 @@ function StepColumn({
             setTyping(true);
             requestAnimationFrame(() => field.current?.select());
           }}
-          title='Click to type'
+          title={t("Click to type")}
           className='grid w-11 cursor-text place-items-center rounded-md py-0.5 transition-colors hover:bg-[color-mix(in_srgb,var(--ink)_10%,transparent)]'
         >
           <NumberFlow value={value} format={{ minimumIntegerDigits: 2 }} className={digits} />

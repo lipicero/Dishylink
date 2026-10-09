@@ -4,7 +4,14 @@
 // current one — a tile reading 100% ping success with the dish unreachable.
 
 import { describe, it, expect } from "vitest";
-import { powerBucketMean, recentAverage, sparklineFrom, hasRecentReadings } from "./readings";
+import {
+  powerBucketMean,
+  recentAverage,
+  sparklineFrom,
+  sparklineBuckets,
+  nextSparkScale,
+  hasRecentReadings,
+} from "./readings";
 import type { TelemetrySample } from "@core/telemetry";
 
 const NOW = 1_784_400_000_000;
@@ -93,6 +100,37 @@ describe("sparklineFrom", () => {
   it("empties as the dish stays silent", () => {
     const stale = readings(NOW - 10 * 60_000, 300, 40);
     expect(sparklineFrom(stale, (s) => s.powerW, NOW)).toEqual([]);
+  });
+});
+
+describe("sparklineBuckets", () => {
+  it("keeps a burst in place when the window slides by a second", () => {
+    const trace = sparklineFrom(readings(NOW, 120, 1), (sample) => sample.downlinkBps, NOW);
+    const spikeAt = trace.findIndex((point) => point.timestampMs === NOW - 45_000);
+    trace[spikeAt].value = 40_000_000;
+
+    const slid = sparklineFrom(
+      readings(NOW + 1_000, 120, 1),
+      (sample) => sample.downlinkBps,
+      NOW + 1_000,
+    );
+    const slidSpike = slid.find((point) => point.timestampMs === NOW - 45_000);
+    if (slidSpike) slidSpike.value = 40_000_000;
+
+    const peak = (buckets: (number | null)[]) => Math.max(...buckets.map((value) => value ?? 0));
+    expect(peak(sparklineBuckets(slid))).toBe(peak(sparklineBuckets(trace)));
+    expect(peak(sparklineBuckets(trace))).toBeGreaterThan(1);
+  });
+});
+
+describe("nextSparkScale", () => {
+  it("holds the scale while a live reading wobbles under the peak", () => {
+    expect(nextSparkScale(100, 80)).toBe(100);
+    expect(nextSparkScale(100, 110)).toBe(110);
+  });
+
+  it("lets go once the line has fallen clearly below the peak", () => {
+    expect(nextSparkScale(100, 40)).toBe(40);
   });
 });
 

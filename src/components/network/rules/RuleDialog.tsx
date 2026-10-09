@@ -3,6 +3,7 @@
 // choice, because a rule can hold both and the stricter one decides.
 
 import { useState } from "react";
+import { t } from "../../../i18n/translate";
 import { useCloudUsage } from "../../../hooks/useCloudAccount";
 import { removeDeviceRule, restartRule, saveDeviceRule } from "../../../hooks/useDataMeter";
 import { useDeviceGroups } from "../../../hooks/useDeviceGroups";
@@ -167,10 +168,10 @@ function RuleForm({
 
       <div className='space-y-5 border-t border-border/60 py-5'>
         <label className='block space-y-1.5'>
-          <span className='text-[12px] font-medium text-foreground'>Name</span>
+          <span className='text-[12px] font-medium text-foreground'>{t("Name")}</span>
           <Input
             value={name}
-            placeholder='Kids devices'
+            placeholder={t("Kids devices")}
             disabled={!named}
             title={named ? undefined : "Named after the device it covers"}
             onChange={(event) => setName(event.target.value)}
@@ -194,7 +195,7 @@ function RuleForm({
         />
 
         <SwitchRow
-          title='Auto-pause'
+          title={t("Auto-pause")}
           detail={autoPauseDetail(allowance.autoPause, rules.mode, members.length > 1)}
           checked={allowance.autoPause}
           onChange={allowance.setAutoPause}
@@ -237,7 +238,7 @@ function RuleForm({
                 onClick={() => void deleteRule()}
               >
                 {pending === "delete" ? (
-                  <SpinLoader variant='segment' size={14} label='Deleting' />
+                  <SpinLoader variant='segment' size={14} label={t("Deleting")} />
                 ) : (
                   "Delete rule"
                 )}
@@ -251,7 +252,7 @@ function RuleForm({
           </Button>
           <Button className='cursor-pointer' disabled={busy || !ready} onClick={() => void save()}>
             {pending === "save" ? (
-              <SpinLoader variant='segment' size={16} label='Saving' />
+              <SpinLoader variant='segment' size={16} label={t("Saving")} />
             ) : rule ? (
               "Save rule"
             ) : (

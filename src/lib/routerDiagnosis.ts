@@ -39,6 +39,7 @@
 
 import { ROUTER_LAN_ADDRESS } from "@core/dishClient";
 import type { RouterPresence } from "@core/routerPresence";
+import { t } from "../i18n/translate";
 
 export type RouterUnreachableCause =
   /** Too early to say. An outage that heals on its own must not be described as
@@ -131,36 +132,35 @@ function suggestedAlternative(routerAddress: string): string {
 }
 
 function messagesFor(routerAddress: string): Record<RouterUnreachableCause, string> {
+  const address = routerAddress;
+  const alt = suggestedAlternative(routerAddress);
   return {
-    addressTaken:
-      `Another device on this network is using ${routerAddress}, the address the Starlink ` +
-      `router answers on, so the router is hidden behind it. To fix it, connect to your ` +
-      `Starlink WiFi, give the other router a different address (like ` +
-      `${suggestedAlternative(routerAddress)}), or point Dishylink's router address at wherever ` +
-      `your Starlink router actually is.`,
-    configuredAddressSilent:
-      `Nothing answered at ${routerAddress}, the address Dishylink is set to use, but the dish ` +
-      `reports your Starlink router is running. It is most likely at a different address. ` +
-      `Check that setting, or clear it to go back to the default.`,
-    differentNetwork:
-      `Your Starlink router is running, but this device isn't on the network ${routerAddress} ` +
-      `belongs to. Connect to your Starlink WiFi, or if the router's subnet was changed, point ` +
-      `Dishylink's router address at where it is now.`,
-    bypassed:
-      `Bypass mode is on, so the Starlink router is switched off and a third-party router runs ` +
-      `your network. WiFi, the client list and the router's own settings all come from it, so ` +
-      `there's nothing to show here. Everything on the dish is unaffected.`,
-    noRouter:
-      `The dish isn't reporting a Starlink router, so this kit either doesn't have one or it's ` +
-      `powered off. WiFi and connected devices come from the router, so there's nothing to show ` +
-      `here. Everything on the dish is unaffected.`,
-    unknown:
-      `Couldn't reach the Starlink router at ${routerAddress}. Another device may be using ` +
-      `that address, the router may be in bypass mode or on a different network, or it may be ` +
-      `at an address other than the one Dishylink is set to use.`,
-    checking:
-      `Couldn't reach the Starlink router at ${routerAddress}. Working out why; most short ` +
-      `silences are the router restarting.`,
+    addressTaken: t(
+      "Another device on this network is using {address}, the address the Starlink router answers on, so the router is hidden behind it. To fix it, connect to your Starlink WiFi, give the other router a different address (like {alt}), or point Dishylink's router address at wherever your Starlink router actually is.",
+      { address, alt },
+    ),
+    configuredAddressSilent: t(
+      "Nothing answered at {address}, the address Dishylink is set to use, but the dish reports your Starlink router is running. It is most likely at a different address. Check that setting, or clear it to go back to the default.",
+      { address },
+    ),
+    differentNetwork: t(
+      "Your Starlink router is running, but this device isn't on the network {address} belongs to. Connect to your Starlink WiFi, or if the router's subnet was changed, point Dishylink's router address at where it is now.",
+      { address },
+    ),
+    bypassed: t(
+      "Bypass mode is on, so the Starlink router is switched off and a third-party router runs your network. WiFi, the client list and the router's own settings all come from it, so there's nothing to show here. Everything on the dish is unaffected.",
+    ),
+    noRouter: t(
+      "The dish isn't reporting a Starlink router, so this kit either doesn't have one or it's powered off. WiFi and connected devices come from the router, so there's nothing to show here. Everything on the dish is unaffected.",
+    ),
+    unknown: t(
+      "Couldn't reach the Starlink router at {address}. Another device may be using that address, the router may be in bypass mode or on a different network, or it may be at an address other than the one Dishylink is set to use.",
+      { address },
+    ),
+    checking: t(
+      "Couldn't reach the Starlink router at {address}. Working out why; most short silences are the router restarting.",
+      { address },
+    ),
   };
 }
 

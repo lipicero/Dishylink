@@ -36,9 +36,17 @@ import { formatThroughput } from "./lib/format";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { useTheme } from "./hooks/useTheme";
 import { dishModelFor } from "./lib/dishMesh";
+import { useLocale } from "./hooks/useLocale";
+import { t } from "./i18n/translate";
 
 export default function App() {
   const { theme, cycleTheme } = useTheme();
+  // Subscribing at the root is what repaints every screen after a language change.
+  const locale = useLocale();
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.title = t("Dishylink — Starlink Companion (Unofficial)");
+  }, [locale]);
   const {
     openPanel,
     setOpenPanel,
@@ -161,19 +169,23 @@ export default function App() {
 
       {/* Terminal modal */}
       {openPanel === "terminal" && status && (
-        <DetailsModal title='Starlink Dish Terminal' onClose={() => setOpenPanel(null)} size='xxl'>
+        <DetailsModal
+          title={t("Starlink Dish Terminal")}
+          onClose={() => setOpenPanel(null)}
+          size='xxl'
+        >
           <DishTerminalCard status={status} stale={telemetry.stale} expanded />
         </DetailsModal>
       )}
       {/* Speed test modal */}
       {openPanel === "speedtest" && (
-        <DetailsModal title='Speed test' onClose={() => setOpenPanel(null)}>
+        <DetailsModal title={t("Speed test")} onClose={() => setOpenPanel(null)}>
           <SpeedTestPanel samples={samples} status={status} />
         </DetailsModal>
       )}
       {/* Alignment modal */}
       {openPanel === "alignment" && (
-        <DetailsModal title='Alignment' onClose={() => setOpenPanel(null)} size='wide'>
+        <DetailsModal title={t("Alignment")} onClose={() => setOpenPanel(null)} size='wide'>
           <AlignmentPanel
             status={status}
             stale={telemetry.stale}
@@ -184,13 +196,13 @@ export default function App() {
       )}
       {/* Data usage modal */}
       {openPanel === "datausage" && (
-        <DetailsModal title='Data usage' onClose={() => setOpenPanel(null)} size='wide'>
+        <DetailsModal title={t("Data usage")} onClose={() => setOpenPanel(null)} size='wide'>
           <DataUsagePanel />
         </DetailsModal>
       )}
       {/* Account modal */}
       {openPanel === "account" && (
-        <DetailsModal title='Starlink account' onClose={() => setOpenPanel(null)} size='wide'>
+        <DetailsModal title={t("Starlink account")} onClose={() => setOpenPanel(null)} size='wide'>
           <AccountPanel lanOnline={lanOnline} />
         </DetailsModal>
       )}

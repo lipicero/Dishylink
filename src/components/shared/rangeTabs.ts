@@ -3,6 +3,13 @@
 // and read labels without importing the chart itself.
 
 import type { EnergyRange } from "../../hooks/useEnergyHistory";
+import { t } from "../../i18n/translate";
+import { intlTag } from "../../lib/locale";
+
+/** Tab labels in the active language. Call during render so a language switch repaints them. */
+export function localizedRangeTabs(): { label: string; value: EnergyRange }[] {
+  return RANGE_TABS.map((tab) => ({ ...tab, label: t(tab.label) }));
+}
 
 export const RANGE_TABS: { label: string; value: EnergyRange }[] = [
   { label: "1H", value: "1h" },
@@ -17,9 +24,9 @@ export const RANGE_TABS: { label: string; value: EnergyRange }[] = [
 /** Clock time for sub-day ranges, date for day/week, month name for month. */
 export function bucketLabel(epochSeconds: number, range: EnergyRange): string {
   const date = new Date(epochSeconds * 1000);
-  if (range === "month") return date.toLocaleDateString([], { month: "short" }); // Jul
+  if (range === "month") return date.toLocaleDateString(intlTag(), { month: "short" });
   if (range === "day" || range === "week") {
-    return date.toLocaleDateString([], { month: "numeric", day: "numeric" });
+    return date.toLocaleDateString(intlTag(), { month: "numeric", day: "numeric" });
   }
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString(intlTag(), { hour: "2-digit", minute: "2-digit" });
 }

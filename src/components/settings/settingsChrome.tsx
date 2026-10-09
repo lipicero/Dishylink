@@ -6,6 +6,7 @@ import { useState } from "react";
 import { ChevronRightIcon } from "lucide-react";
 import { actionButton } from "../ui/action-button";
 import { Button } from "@/components/ui/button";
+import { t } from "../../i18n/translate";
 import {
   Dialog,
   DialogContent,
@@ -162,7 +163,7 @@ export function DangerAction({
               <div ref={armedRef} className='flex flex-col gap-2 pt-1 pb-0.5'>
                 <SlideToConfirm
                   label={slideLabel}
-                  busyLabel={busy ? "Sending…" : "Confirm to continue"}
+                  busyLabel={busy ? t("Sending…") : t("Confirm to continue")}
                   tone='danger'
                   busy={confirming || busy}
                   onConfirm={() => setConfirming(true)}
@@ -194,7 +195,7 @@ export function DangerAction({
           <>
             {!slideLabel && (
               <button className={actionButton("danger")} disabled={busy} onClick={() => void run()}>
-                {busy ? "Sending…" : confirmLabel}
+                {busy ? t("Sending…") : t(confirmLabel)}
               </button>
             )}
             <button
@@ -202,7 +203,7 @@ export function DangerAction({
               disabled={busy}
               onClick={() => setArmed(false)}
             >
-              Cancel
+              {t("Cancel")}
             </button>
           </>
         )}
@@ -215,7 +216,7 @@ export function DangerAction({
           overlayClassName='bg-black/30 backdrop-blur-[2px]'
         >
           <DialogHeader>
-            <DialogTitle className='text-[19px] leading-snug'>Are you sure?</DialogTitle>
+            <DialogTitle className='text-[19px] leading-snug'>{t("Are you sure?")}</DialogTitle>
             <DialogDescription className='text-[13.5px] leading-relaxed'>
               {caption}
             </DialogDescription>
@@ -227,7 +228,7 @@ export function DangerAction({
               disabled={busy}
               onClick={() => setConfirming(false)}
             >
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button
               variant='destructive'
@@ -235,7 +236,7 @@ export function DangerAction({
               disabled={busy}
               onClick={() => void run()}
             >
-              {busy ? "Sending…" : confirmLabel}
+              {busy ? t("Sending…") : t(confirmLabel)}
             </Button>
           </DialogFooter>
         </DialogContent>

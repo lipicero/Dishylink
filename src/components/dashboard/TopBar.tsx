@@ -9,6 +9,7 @@ import { nextTheme, type ThemeName } from "../../lib/theme";
 import type { DishConnectionState } from "../../hooks/useDishTelemetry";
 import type { DishStatusJson } from "@core/dishClient";
 import { formatUptime } from "../../lib/format";
+import { t } from "../../i18n/translate";
 import { AlertsMenu } from "../alerts/AlertsMenu";
 import { SupportMenu } from "../shared/SupportMenu";
 import { AppLogo } from "../../assets/icons/AppLogo";
@@ -77,7 +78,7 @@ export function TopBar({
         <div className='flex items-center gap-2.5'>
           <span className={statusItem}>
             <span className={`${statusDot} ${CONNECTION_DOT[connectionState]} `} />
-            {CONNECTION_LABEL[connectionState]}
+            {t(CONNECTION_LABEL[connectionState])}
           </span>
           {status?.deviceInfo?.countryCode && (
             <span className={`${statusItem} ${statusDivider}`}>
@@ -86,7 +87,7 @@ export function TopBar({
           )}
           {status?.deviceState?.uptimeS && (
             <span className={`${statusItem} ${statusDivider}`}>
-              up {formatUptime(Number(status.deviceState.uptimeS))}
+              {t("up {uptime}", { uptime: formatUptime(Number(status.deviceState.uptimeS)) })}
             </span>
           )}
         </div>
@@ -101,8 +102,11 @@ export function TopBar({
         <button
           className={iconButton}
           onClick={onCycleTheme}
-          aria-label={`Color theme: ${theme}. Switch to ${nextTheme(theme)}.`}
-          title={`Color theme: ${theme}`}
+          aria-label={t("Color theme: {theme}. Switch to {next}.", {
+            theme: t(theme),
+            next: t(nextTheme(theme)),
+          })}
+          title={t("Color theme: {theme}", { theme: t(theme) })}
         >
           <ThemeIcon />
         </button>

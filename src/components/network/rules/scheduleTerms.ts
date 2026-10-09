@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import type { Schedule, ScheduleWindow } from "@core/schedule";
+import { intlTag, isSpanish } from "../../../lib/locale";
 
 export const WEEKDAY_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6];
@@ -15,6 +16,11 @@ export const MINUTES_PER_DAY = 1440;
 /** "4:00 PM". Midnight at the end of a window reads as the end of the day it
  *  closes rather than the start of the one it does not reach. */
 export function clockLabel(minutes: number): string {
+  if (isSpanish()) {
+    if (minutes >= MINUTES_PER_DAY) return "24:00";
+    const hour24 = Math.floor(minutes / 60) % 24;
+    return `${hour24}:${String(minutes % 60).padStart(2, "0")}`;
+  }
   if (minutes >= MINUTES_PER_DAY) return "midnight";
   const hour24 = Math.floor(minutes / 60);
   const hour12 = hour24 % 12 || 12;
@@ -29,7 +35,7 @@ const sameDays = (days: readonly number[], other: readonly number[]) =>
 export function dateLabel(dateKey: string): string {
   const date = new Date(`${dateKey}T00:00:00`);
   if (Number.isNaN(date.getTime())) return dateKey;
-  return date.toLocaleDateString(undefined, { weekday: "short", day: "numeric", month: "short" });
+  return date.toLocaleDateString(intlTag(), { weekday: "short", day: "numeric", month: "short" });
 }
 
 /** The run of dates a window is confined to, if any: one date when both ends
@@ -38,24 +44,27 @@ export function runLabel(window: ScheduleWindow): string | null {
   const { fromDate, toDate } = window;
   if (!fromDate && !toDate) return null;
   if (fromDate && fromDate === toDate) return dateLabel(fromDate);
-  if (!toDate) return `From ${dateLabel(fromDate!)}`;
-  if (!fromDate) return `Until ${dateLabel(toDate)}`;
+  if (!toDate)
+    return isSpanish() ? `Desde ${dateLabel(fromDate!)}` : `From ${dateLabel(fromDate!)}`;
+  if (!fromDate) return isSpanish() ? `Hasta ${dateLabel(toDate)}` : `Until ${dateLabel(toDate)}`;
   return `${dateLabel(fromDate)} – ${dateLabel(toDate)}`;
 }
 
 function weekdaysLabel(weekdays: readonly number[]): string {
-  if (sameDays(weekdays, EVERY_DAY)) return "Every day";
-  if (sameDays(weekdays, WEEKDAYS)) return "Mon–Fri";
-  if (sameDays(weekdays, WEEKEND)) return "Sat–Sun";
+  const es = isSpanish();
+  if (sameDays(weekdays, EVERY_DAY)) return es ? "Todos los días" : "Every day";
+  if (sameDays(weekdays, WEEKDAYS)) return es ? "lun–vie" : "Mon–Fri";
+  if (sameDays(weekdays, WEEKEND)) return es ? "sáb–dom" : "Sat–Sun";
+  const labels = es ? ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"] : WEEKDAY_LABELS;
   return [...weekdays]
     .sort()
-    .map((weekday) => WEEKDAY_LABELS[weekday])
+    .map((weekday) => labels[weekday])
     .join(", ");
 }
 
 export function daysLabel(window: ScheduleWindow): string {
   const run = runLabel(window);
-  if (window.weekdays.length === 0) return run ?? "No days";
+  if (window.weekdays.length === 0) return run ?? (isSpanish() ? "Ningún día" : "No days");
   const days = weekdaysLabel(window.weekdays);
   return run ? `${days}, ${run}` : days;
 }

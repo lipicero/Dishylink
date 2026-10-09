@@ -6,12 +6,13 @@ import { dishModelFor, specForModel } from "../../lib/dishMesh";
 import { formatAttitudeState, formatRelativeTime, formatUptime } from "../../lib/format";
 import { FactGrid, FactRow } from "../ui/fact-row";
 import { DishIcon } from "../../assets/icons/DishIcon";
+import { t } from "../../i18n/translate";
 import { ExpandIcon } from "../../assets/icons/ExpandIcon";
 import { formatServiceClass } from "./serviceClass";
 
 /** Why downlink is capped, if it is. NO_LIMIT / NO_RESTRICTION read as "none". */
 function formatBandwidthLimit(reason?: string): string {
-  if (!reason || reason === "NO_LIMIT" || reason === "NO_RESTRICTION") return "none";
+  if (!reason || reason === "NO_LIMIT" || reason === "NO_RESTRICTION") return t("none");
   return reason.replaceAll("_", " ").toLowerCase();
 }
 
@@ -27,8 +28,12 @@ function readyStatesFact(states?: DishReadyStatesJson): DeviceFact {
     ["RF", states.rf],
   ];
   const down = known.filter(([, ready]) => ready !== true).map(([name]) => name);
-  if (down.length === 0) return { label: "Subsystems", value: "all ready", tone: "good" };
-  return { label: "Subsystems", value: `${down.join(", ")} coming up`, tone: "warn" };
+  if (down.length === 0) return { label: "Subsystems", value: t("all ready"), tone: "good" };
+  return {
+    label: "Subsystems",
+    value: t("{names} coming up", { names: down.join(", ") }),
+    tone: "warn",
+  };
 }
 
 interface DeviceFact {
@@ -52,13 +57,13 @@ const TONE_VAR: Record<NonNullable<DeviceFact["tone"]>, string> = {
  */
 function signalCondition(status: DishStatusJson): DeviceFact {
   if (status.isSnrPersistentlyLow) {
-    return { label: "Signal", value: "weather affecting signal", tone: "warn" };
+    return { label: "Signal", value: t("weather affecting signal"), tone: "warn" };
   }
   if (status.isSnrAboveNoiseFloor === false) {
-    return { label: "Signal", value: "weak — below noise floor", tone: "bad" };
+    return { label: "Signal", value: t("weak — below noise floor"), tone: "bad" };
   }
   if (status.isSnrAboveNoiseFloor) {
-    return { label: "Signal", value: "normal", tone: "good" };
+    return { label: "Signal", value: t("normal"), tone: "good" };
   }
   return { label: "Signal", value: "—" };
 }
@@ -101,7 +106,9 @@ export function DishTerminalCard({
     },
     {
       label: "Satellites in View (GPS)",
-      value: status.gpsStats?.gpsValid ? `${status.gpsStats.gpsSats ?? 0} satellites` : "no fix",
+      value: status.gpsStats?.gpsValid
+        ? t("{count} satellites", { count: status.gpsStats.gpsSats ?? 0 })
+        : t("no fix"),
     },
     {
       // "GPS fix" is receiver jargon — a "fix" is a computed position — and it
@@ -114,10 +121,10 @@ export function DishTerminalCard({
       // would read as a fault where there is none.
       label: "Position",
       value: !status.gpsStats?.gpsValid
-        ? "no fix"
+        ? t("no fix")
         : positionState && positionState !== "Converged"
-          ? `locked · ${positionState}`
-          : "locked",
+          ? t("locked · {state}", { state: t(positionState) })
+          : t("locked"),
       // Green whenever the dish has a position. An absent state is unknown, not
       // a fault, so it must not downgrade a perfectly good lock.
       tone: status.gpsStats?.gpsValid && positionState !== "Unconverged" ? "good" : "warn",
@@ -134,7 +141,7 @@ export function DishTerminalCard({
       label: "Downstream routers",
       value: status.connectedRouters?.length
         ? `${status.connectedRouters.length} · ${status.connectedRouters.join(", ")}` +
-          (routerPresence(status) === "bypassed" ? " · bypassed" : "")
+          (routerPresence(status) === "bypassed" ? t(" · bypassed") : "")
         : "0",
     },
     { label: "Bandwidth limit", value: formatBandwidthLimit(status.dlBandwidthRestrictedReason) },
@@ -149,7 +156,10 @@ export function DishTerminalCard({
       label: "Tilt",
       value: alignment?.tiltAngleDeg !== undefined ? `${alignment.tiltAngleDeg.toFixed(1)}°` : "—",
     },
-    { label: "Software update", value: (status.softwareUpdateState ?? "—").toLowerCase() },
+    {
+      label: "Software update",
+      value: status.softwareUpdateState ? t(status.softwareUpdateState.toLowerCase()) : "—",
+    },
   ];
 
   // Pending-update banner: a reboot is scheduled when the countdown is ≥ 0
@@ -158,9 +168,11 @@ export function DishTerminalCard({
   const updateState = status.softwareUpdateState ?? "";
   const updateBanner =
     rebootSeconds >= 0
-      ? `Update ready — reboot possible in ${formatUptime(rebootSeconds)}`
+      ? t("Update ready — reboot possible in {when}", { when: formatUptime(rebootSeconds) })
       : updateState && updateState !== "IDLE"
-        ? `Software update: ${updateState.replaceAll("_", " ").toLowerCase()}`
+        ? t("Software update: {state}", {
+            state: t(updateState.replaceAll("_", " ").toLowerCase()),
+          })
         : null;
 
   return (
@@ -169,7 +181,7 @@ export function DishTerminalCard({
         {!expanded && (
           <span className='flex items-center gap-2 text-[16px] font-semibold tracking-[0.005em] text-foreground'>
             <DishIcon size={26} className={stale ? "opacity-40" : undefined} />
-            Starlink Dish Terminal
+            {t("Starlink Dish Terminal")}
           </span>
         )}
         <div className='flex items-center gap-2.5'>
@@ -179,8 +191,9 @@ export function DishTerminalCard({
               {/* "last known" alone left the reader unable to tell a five-second
                   gap from a five-hour one, while every figure below still looked
                   live. Say how old the snapshot actually is. */}
-              not answering ·{" "}
-              {lastStatusAtMs ? `from ${formatRelativeTime(lastStatusAtMs)}` : "last known"}
+              {lastStatusAtMs
+                ? t("not answering · {when}", { when: formatRelativeTime(lastStatusAtMs) })
+                : t("not answering · last known")}
             </span>
           )}
           <span className='font-mono text-[12px] font-medium text-muted-foreground tabular-nums'>
@@ -190,7 +203,7 @@ export function DishTerminalCard({
             <button
               className='inline-flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-muted-foreground transition-colors hover:bg-[color-mix(in_srgb,var(--ink)_8%,var(--surface))] hover:text-foreground'
               onClick={onExpand}
-              aria-label='Open full terminal view'
+              aria-label={t("Open full terminal view")}
             >
               <ExpandIcon />
             </button>
@@ -204,7 +217,7 @@ export function DishTerminalCard({
       )}
       <FactGrid columns={3}>
         {facts.map((fact) => (
-          <FactRow key={fact.label} label={fact.label}>
+          <FactRow key={fact.label} label={t(fact.label)}>
             <span
               className='overflow-hidden text-right font-mono text-[12px] text-ellipsis whitespace-nowrap text-foreground tabular-nums'
               style={fact.tone ? { color: `var(${TONE_VAR[fact.tone]})` } : undefined}

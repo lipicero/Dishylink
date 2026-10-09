@@ -27,6 +27,7 @@ import { SpeakerIcon } from "../../assets/icons/SpeakerIcon";
 import { ActiveTab, HistoryTab, StatusTab } from "./AlertsTabs";
 import { ALERTS_TABS, type AlertsTab } from "./alertsPanelTabs";
 import { SEVERITY_COLOR } from "./alertFormat";
+import { t } from "../../i18n/translate";
 
 const BTN_RESET = "cursor-pointer appearance-none border-0 bg-transparent p-0 text-inherit";
 
@@ -42,8 +43,10 @@ function SoundToggle({ soundOn, onToggle }: { soundOn: boolean; onToggle: () => 
       // Not green: that's the online indicator's color, and this is a
       // preference, not a health state. Ink when on, dimmed when muted.
       style={{ color: soundOn ? "var(--ink)" : "var(--ink-muted)" }}
-      aria-label={soundOn ? "Mute alert sounds" : "Unmute alert sounds"}
-      title={soundOn ? "Alert sounds on — click to mute" : "Alert sounds muted — click to unmute"}
+      aria-label={t(soundOn ? "Mute alert sounds" : "Unmute alert sounds")}
+      title={t(
+        soundOn ? "Alert sounds on — click to mute" : "Alert sounds muted — click to unmute",
+      )}
       onClick={onToggle}
     >
       <SpeakerIcon on={soundOn} />
@@ -67,10 +70,11 @@ const AlertsBellTrigger = forwardRef<
     <button
       ref={ref}
       className='relative inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-0 bg-card text-ink-secondary transition-colors duration-[120ms] hover:text-ink'
-      aria-label='Alerts and notifications'
+      aria-label={t("Alerts and notifications")}
       title={
-        (count > 0 ? `${count} active alert${count === 1 ? "" : "s"}` : "Alerts — all healthy") +
-        (muted ? " · sounds muted" : "")
+        (count > 0
+          ? t(count === 1 ? "{count} active alert" : "{count} active alerts", { count })
+          : t("Alerts — all healthy")) + (muted ? t(" · sounds muted") : "")
       }
       style={count > 0 ? { color } : undefined}
       {...triggerProps}
@@ -130,7 +134,7 @@ export function AlertsMenu({
         className='w-[380px] overflow-hidden rounded-xl border border-solid border-hairline dark:bg-card p-0 text-ink shadow-[0_12px_40px_rgba(0,0,0,0.45)]'
       >
         <div className='flex items-center justify-between px-4 py-2'>
-          <span className='text-[15px] font-semibold text-ink'>Alerts</span>
+          <span className='text-[15px] font-semibold text-ink'>{t("Alerts")}</span>
           <span className='flex items-center gap-3.5'>
             <SoundToggle soundOn={soundOn} onToggle={toggleSound} />
             {notificationsSupported() && (
@@ -139,7 +143,7 @@ export function AlertsMenu({
                 style={{ color: notificationsOn ? "var(--status-good)" : "var(--ink-muted)" }}
                 onClick={onToggleNotifications}
               >
-                {notificationsOn ? "Notifications on" : "Enable notifications"}
+                {notificationsOn ? t("Notifications on") : t("Enable notifications")}
               </button>
             )}
           </span>
@@ -149,7 +153,7 @@ export function AlertsMenu({
             instead of reading as a click that did nothing. */}
         {notificationsBlockedReason && (
           <p className='px-4 pb-2 text-[11px] leading-snug text-ink-secondary'>
-            {notificationsBlockedReason}
+            {t(notificationsBlockedReason)}
           </p>
         )}
 
@@ -170,7 +174,7 @@ export function AlertsMenu({
                 )}
                 style={tab === key ? { borderBottomColor: "var(--ink)" } : undefined}
               >
-                {label}
+                {t(label)}
                 {key === "active" && activeCount > 0 && (
                   <span
                     className='flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white'

@@ -10,7 +10,7 @@
   "description": "An open-source desktop app to monitor the performance and health of your Starlink.",
   "scripts": {
     "postinstall": "wxt prepare",
-    "dev": "vite",
+    "dev": "vite --host",
     "dev:electron": "node scripts/make-icon.mjs && ELECTRON=1 vite",
     "dev:electron:win": "cross-env ELECTRON=1 vite",
     "build": "tsc -b && vite build",

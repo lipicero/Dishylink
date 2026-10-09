@@ -11,6 +11,7 @@
 // machine that bypassed it.
 
 import { useEffect, useState } from "react";
+import { t } from "../../i18n/translate";
 import type { RouterPresence } from "@core/routerPresence";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -165,7 +166,7 @@ export function BypassSection({
   return (
     <>
       <SettingRow
-        title='Bypass mode'
+        title={t("Bypass mode")}
         info={BYPASS_TIP}
         infoSeverity='danger'
         caption={caption}
@@ -220,7 +221,7 @@ export function BypassSection({
           overlayClassName='bg-black/30 backdrop-blur-[2px]'
         >
           <DialogHeader>
-            <DialogTitle className='text-[19px] leading-snug'>Are you sure?</DialogTitle>
+            <DialogTitle className='text-[19px] leading-snug'>{t("Are you sure?")}</DialogTitle>
             <DialogDescription className='text-[13.5px] leading-relaxed'>
               {offered
                 ? "The Starlink router and its WiFi will switch off. Only devices behind a third-party router wired to the dish stay online. You can turn bypass back off from here as long as this device still has internet — if nothing else provides it, you will need another device on mobile data."

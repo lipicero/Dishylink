@@ -28,6 +28,8 @@ import { Callout } from "../ui/callout";
 import { inlineLinkButton } from "../ui/action-button";
 import { requestPanel } from "../../hooks/usePanelRouting";
 import { selfDeviceHost } from "../../lib/selfDeviceHost";
+import { t } from "../../i18n/translate";
+import { intlTag } from "../../lib/locale";
 
 /** Local `year * 12 + month` — which monthly bucket an instant belongs to. */
 function monthKey(atMs: number): number {
@@ -67,7 +69,7 @@ export function DeviceUsageList() {
   // The heading is this calendar month, not whichever month the first record
   // happens to carry — an idle device still holds last month's bucket, and that
   // must not retitle the section.
-  const monthLabel = new Date().toLocaleDateString(undefined, {
+  const monthLabel = new Date().toLocaleDateString(intlTag(), {
     month: "long",
     year: "numeric",
   });
@@ -79,9 +81,13 @@ export function DeviceUsageList() {
     <div className='mt-6'>
       <div className='mb-0.5 flex items-center gap-[7px]'>
         <span className='text-[17px] font-bold tracking-[-0.01em] text-foreground'>
-          Devices Usage
+          {t("Devices Usage")}
         </span>
-        <InfoDot tip='How much data each device has used this month. The total keeps adding up even if a device leaves and rejoins your network, and it starts over at the beginning of each month.' />
+        <InfoDot
+          tip={t(
+            "How much data each device has used this month. The total keeps adding up even if a device leaves and rejoins your network, and it starts over at the beginning of each month.",
+          )}
+        />
         {unavailable ? null : confirmingClear ? (
           <span className='ml-auto flex items-center gap-2'>
             <button
@@ -91,13 +97,13 @@ export function DeviceUsageList() {
                 setConfirmingClear(false);
               }}
             >
-              Clear all?
+              {t("Clear all?")}
             </button>
             <button
               className='cursor-pointer border-0 bg-transparent p-0 text-[12px] font-medium text-muted-foreground'
               onClick={() => setConfirmingClear(false)}
             >
-              Cancel
+              {t("Cancel")}
             </button>
           </span>
         ) : (
@@ -105,14 +111,14 @@ export function DeviceUsageList() {
             className='ml-auto cursor-pointer border-0 bg-transparent p-0 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground'
             onClick={() => setConfirmingClear(true)}
           >
-            Clear all
+            {t("Clear all")}
           </button>
         )}
       </div>
       <div className='mb-1 text-[11.5px] font-medium text-muted-foreground'>{monthLabel}</div>
       {unavailable && (
         <div className='py-2.5 text-[12.5px] text-muted-foreground'>
-          Usage unavailable — historian not reachable.
+          {t("Usage unavailable — historian not reachable.")}
         </div>
       )}
       {writeError && <div className='py-2.5 text-[12.5px] text-destructive'>{writeError}</div>}
@@ -140,14 +146,15 @@ export function DeviceUsageList() {
           footnote to the list rather than a banner over it. */}
       {!selfDeviceIdentified && !unavailable && namingFixesIt && (
         <Callout tone='info' iconSeverity='warn' className='mt-2.5'>
-          The device you are using counts Dishylink&rsquo;s own checks of your dish and router as
-          its data. To leave them out,{" "}
+          {t(
+            "The device you are using counts Dishylink's own checks of your dish and router as its data. To leave them out,",
+          )}{" "}
           <button
             type='button'
             className={inlineLinkButton}
             onClick={() => requestPanel("settings", "app")}
           >
-            pick it under app&rsquo;s settings
+            {t("pick it under app's settings")}
           </button>
           .
         </Callout>
@@ -180,14 +187,14 @@ function DeviceUsageRow({
   // so anything seen this recently is here now; "Active now" reads clearer than a
   // last-seen of a few seconds. Older stamps mean the device has actually gone.
   const isActive = nowMs - total.lastSeenMs < 120_000;
-  const seenLabel = isActive ? "Active now" : formatRelativeTime(total.lastSeenMs);
+  const seenLabel = isActive ? t("Active now") : formatRelativeTime(total.lastSeenMs);
   // A device the historian has not seen this month still holds last month's
   // bucket, so name the month on the row — otherwise it reads as this month's
   // usage under the heading above.
   const staleMonth =
     monthKey(total.sinceMs) === monthKey(nowMs)
       ? null
-      : new Date(total.sinceMs).toLocaleDateString(undefined, { month: "short" });
+      : new Date(total.sinceMs).toLocaleDateString(intlTag(), { month: "short" });
   const subParts = [vendor && vendor !== name ? vendor : null, staleMonth, seenLabel].filter(
     Boolean,
   );
@@ -218,10 +225,14 @@ function DeviceUsageRow({
       </span>
       {/* Actions live at the end of the row, always visible next to the usage. */}
       <span className='flex flex-none items-center gap-0.5'>
-        <RowAction label={`Reset this month's usage for ${name}`} onClick={onReset}>
+        <RowAction label={t("Reset this month's usage for {name}", { name })} onClick={onReset}>
           <ResetIcon />
         </RowAction>
-        <RowAction label={`Delete usage record for ${name}`} destructive onClick={onRemove}>
+        <RowAction
+          label={t("Delete usage record for {name}", { name })}
+          destructive
+          onClick={onRemove}
+        >
           <CloseIcon />
         </RowAction>
       </span>

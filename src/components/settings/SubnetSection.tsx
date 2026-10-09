@@ -7,6 +7,7 @@
 // two on a single form for the same reason.
 
 import { useState } from "react";
+import { t } from "../../i18n/translate";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -96,7 +97,7 @@ export function SubnetSection({
   return (
     <>
       <SettingRow
-        title='Subnet'
+        title={t("Subnet")}
         info={SUBNET_TIP}
         infoSeverity='danger'
         caption={
@@ -126,7 +127,7 @@ export function SubnetSection({
           }}
         >
           <SelectTrigger size='sm' className='w-[168px] font-mono text-[12px] tabular-nums'>
-            <SelectValue placeholder='Not known' />
+            <SelectValue placeholder={t("Not known")} />
           </SelectTrigger>
           <SelectContent>
             {SUBNET_PRESETS.map((preset) => (
@@ -137,7 +138,9 @@ export function SubnetSection({
               >
                 {preset}
                 {preset === currentSubnet && (
-                  <span className='ml-2 font-sans text-[11px] text-muted-foreground'>Current</span>
+                  <span className='ml-2 font-sans text-[11px] text-muted-foreground'>
+                    {t("Current")}
+                  </span>
                 )}
               </SelectItem>
             ))}
@@ -164,10 +167,10 @@ export function SubnetSection({
                     setEditInProgress(true);
                     setError(null);
                   }}
-                  placeholder='Your current WiFi password'
+                  placeholder={t("Your current WiFi password")}
                   spellCheck={false}
                   autoComplete='off'
-                  aria-label='WiFi password'
+                  aria-label={t("WiFi password")}
                   className='h-8 w-[232px] pr-8 text-[12px]'
                 />
                 <button

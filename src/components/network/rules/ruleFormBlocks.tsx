@@ -8,6 +8,7 @@ import { AllowanceFields } from "./allowanceFields";
 import type { AllowanceDraft, RuleModeDraft } from "./allowanceTerms";
 import { ScheduleFields } from "./scheduleFields";
 import type { ScheduleDraft } from "./scheduleTerms";
+import { t } from "../../../i18n/translate";
 
 export function RuleDialogShell({
   open,
@@ -83,7 +84,7 @@ export function MeasureFields({
       <ScheduleFields draft={timetable} />
       <div className='space-y-4 border-t border-border/60 pt-4'>
         <SwitchRow
-          title='Data allowance'
+          title={t("Data allowance")}
           detail={capDetail}
           checked={rules.capping}
           onChange={rules.setCapping}

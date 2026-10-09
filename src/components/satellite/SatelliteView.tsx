@@ -18,6 +18,8 @@ import { useObstructionSnapshots } from "../../hooks/useObstructionSnapshots";
 import { liveSurvey, snapshotSurvey } from "./skySurvey";
 import { ObstructionTimeLapse } from "../obstruction/ObstructionTimeLapse";
 import { ObstructionKey, ObstructionStats } from "../obstruction/ObstructionKey";
+import { t } from "../../i18n/translate";
+import { intlTag } from "../../lib/locale";
 import { Loading } from "../ui/loading";
 import { Callout } from "../ui/callout";
 import { LocationSetup } from "./LocationSetup";
@@ -298,9 +300,9 @@ export function SatelliteView({
         className={`pointer-events-none absolute inset-y-0 left-0 flex w-[380px] flex-col gap-4 overflow-y-auto p-6 ${immersive ? "hidden" : ""}`}
       >
         <div className='flex flex-col gap-1.5'>
-          <h1 className='m-0 text-[15px] font-semibold'>Live satellite view</h1>
+          <h1 className='m-0 text-[15px] font-semibold'>{t("Live satellite view")}</h1>
           <p className='m-0 text-xs leading-relaxed text-[#8b97a8]'>
-            Satellites are propagated live from SpaceX's published ephemerides.
+            {t("Satellites are propagated live from SpaceX's published ephemerides.")}
           </p>
         </div>
 
@@ -308,14 +310,18 @@ export function SatelliteView({
           className={`pointer-events-auto flex flex-col gap-3.5 rounded-xl px-[16px] py-4 ${glassPanel}`}
         >
           <div className='flex items-baseline justify-between gap-2 text-[12px] font-medium text-muted-foreground'>
-            <span>{site ? `site ${site}` : "No location set to fetch live satellites"}</span>
+            <span>
+              {site
+                ? t("site {coords}", { coords: site })
+                : t("No location set to fetch live satellites")}
+            </span>
             <span className='flex shrink-0 items-baseline gap-2.5'>
               <button
                 type='button'
                 className={siteAction}
                 onClick={() => setChangingLocation(!changingLocation)}
               >
-                {site ? "change" : "set"}
+                {site ? t("change") : t("set")}
               </button>
               {site && (
                 <button
@@ -326,7 +332,7 @@ export function SatelliteView({
                     setChangingLocation(false);
                   }}
                 >
-                  clear
+                  {t("clear")}
                 </button>
               )}
             </span>
@@ -359,7 +365,7 @@ export function SatelliteView({
           {/* The first open sits empty for 10–20s while the ephemerides download
               and propagate. Say so rather than showing an unexplained empty sky. */}
           {satellites.feedState === "loading" && (
-            <Loading message="Loading SpaceX's published constellation ephemerides…" />
+            <Loading message={t("Loading SpaceX's published constellation ephemerides…")} />
           )}
           {/* Names whichever side actually failed, rather than blaming the user's
               connection: the usual cause is the public data source being slow.
@@ -367,8 +373,12 @@ export function SatelliteView({
           {satellites.feedState === "error" && (
             <Callout tone='error'>
               {satellites.errorReason === "offline"
-                ? "Can't reach the satellite data source — check your internet connection. Retrying automatically."
-                : "The satellite data source isn't responding right now. Retrying automatically."}
+                ? t(
+                    "Can't reach the satellite data source — check your internet connection. Retrying automatically.",
+                  )
+                : t(
+                    "The satellite data source isn't responding right now. Retrying automatically.",
+                  )}
             </Callout>
           )}
         </div>
@@ -379,8 +389,10 @@ export function SatelliteView({
         {!viewingHistory && hasSurvey && (
           <p className='m-0 text-xs leading-relaxed text-[#8b97a8]'>
             {(obstructionStats?.fractionObstructed ?? 0) < 0.005
-              ? "Your Starlink has an unobstructed view of the sky. The map sharpens as the dish collects data."
-              : "Obstructed patches cause brief interruptions as satellites pass behind them."}
+              ? t(
+                  "Your Starlink has an unobstructed view of the sky. The map sharpens as the dish collects data.",
+                )
+              : t("Obstructed patches cause brief interruptions as satellites pass behind them.")}
           </p>
         )}
       </div>
@@ -427,14 +439,14 @@ export function SatelliteView({
 
       <div className='absolute right-6 top-5 flex items-center gap-2'>
         <SkyControl
-          label={immersive ? "Exit immersive view" : "Immersive view"}
+          label={immersive ? t("Exit immersive view") : t("Immersive view")}
           pressed={immersive}
           onClick={() => setImmersive((on) => !on)}
         >
           <ImmersiveIcon size={14} />
         </SkyControl>
         <SkyControl
-          label={domeShown ? "Hide dome" : "Show dome"}
+          label={domeShown ? t("Hide dome") : t("Show dome")}
           pressed={!domeShown}
           onClick={() => {
             const shown = scene?.toggleDome() ?? true;
@@ -447,22 +459,22 @@ export function SatelliteView({
           <DomeCanopyIcon off={!domeShown} />
         </SkyControl>
         <SkyControl
-          label={trimmed ? "Show unmapped sky" : "Hide unmapped sky"}
+          label={trimmed ? t("Show unmapped sky") : t("Hide unmapped sky")}
           pressed={trimmed}
           onClick={() => setDomeTrimEnabled(!trimmed)}
         >
           <DomeIcon skirted={trimmed} />
         </SkyControl>
         <SkyControl
-          label={rotating ? "Pause rotation" : "Resume rotation"}
+          label={rotating ? t("Pause rotation") : t("Resume rotation")}
           onClick={() => setRotating(scene?.toggleRotation() ?? false)}
         >
           {rotating ? <Pause size={13} /> : <Play size={13} />}
         </SkyControl>
-        <SkyControl label='Reset view' onClick={() => scene?.resetView()}>
+        <SkyControl label={t("Reset view")} onClick={() => scene?.resetView()}>
           <Minimize2 size={13} />
         </SkyControl>
-        <SkyControl label='Close' onClick={onClose}>
+        <SkyControl label={t("Close")} onClick={onClose}>
           ✕
         </SkyControl>
       </div>
@@ -471,8 +483,9 @@ export function SatelliteView({
         <div className='absolute bottom-[96px] left-1/2 w-[min(720px,55vw)] min-w-[320px] -translate-x-1/2'>
           {viewingHistory && scrubIndex !== null && (
             <p className='m-0 pb-1 text-center text-[11.5px] font-medium text-muted-foreground'>
-              Viewing the obstruction map as of{" "}
-              {new Date(snapshots[scrubIndex].takenAtMs).toLocaleString()}.
+              {t("Viewing the obstruction map as of {when}", {
+                when: new Date(snapshots[scrubIndex].takenAtMs).toLocaleString(intlTag()),
+              })}
             </p>
           )}
           <ObstructionTimeLapse
@@ -495,12 +508,12 @@ export function SatelliteView({
         className={`pointer-events-none absolute bottom-[74px] left-1/2 m-0 -translate-x-1/2 text-[11px] text-[#8b97a8] opacity-80 ${immersive ? "hidden" : ""}`}
       >
         {unsupported
-          ? "This browser could not open a WebGL context."
+          ? t("This browser could not open a WebGL context.")
           : !hasSurvey
-            ? "Waiting for the dish's obstruction map…"
+            ? t("Waiting for the dish's obstruction map…")
             : viewingHistory
-              ? "time-lapse"
-              : "Drag to orbit · Scroll to zoom · Esc to close"}
+              ? t("time-lapse")
+              : t("Drag to orbit · Scroll to zoom · Esc to close")}
       </p>
     </div>
   );

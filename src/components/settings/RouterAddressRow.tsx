@@ -5,6 +5,7 @@
 // reachability check.
 
 import { useState } from "react";
+import { t } from "../../i18n/translate";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { SettingRow } from "./settingsChrome";
@@ -66,7 +67,7 @@ export function RouterAddressRow({
   return (
     <>
       <SettingRow
-        title='Router IP address'
+        title={t("Router IP address")}
         info={`Dishylink looks for your router at this address. Change it only if the router's subnet was moved in the Starlink app, or your kit is in bypass mode behind a third-party router. Clearing the box returns to ${fallback}.`}
         infoSeverity='warn'
         caption={`Default is ${fallback}`}

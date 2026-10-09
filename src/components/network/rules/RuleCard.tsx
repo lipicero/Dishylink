@@ -19,6 +19,7 @@ import {
 } from "./ruleMeasure";
 import { Bar } from "./ruleReadout";
 import { ScheduleWindows } from "./scheduleFields";
+import { t } from "../../../i18n/translate";
 
 /** Keyed to what is actually holding the device, not to what the rule is about:
  *  a rule with a bedtime can still be paused for running out of bytes. */
@@ -63,7 +64,7 @@ export function RuleCard({
   // A rule is only paused when it is holding every device it names. One member
   // out of bytes leaves the rest online, and the rule running.
   const allPaused = rule.pausedCount > 0 && rule.pausedCount === rule.memberCount;
-  const capLabel = `${formatBytes(rule.allocationBytes)}${perDevice ? " each" : shared ? " shared" : ""}`;
+  const capLabel = `${formatBytes(rule.allocationBytes)}${perDevice ? t(" each") : shared ? t(" shared") : ""}`;
 
   return (
     <div
@@ -92,8 +93,19 @@ export function RuleCard({
             <span>
               <span className='block text-[15px] font-semibold text-foreground'>{rule.name}</span>
               <span className='block text-[11.5px] text-muted-foreground'>
-                {rule.memberKeys.length} device{rule.memberKeys.length === 1 ? "" : "s"}
-                {perDevice && capped && <> · {formatBytes(rule.capacityBytes)} in total</>}
+                {rule.memberKeys.length === 1
+                  ? perDevice && capped
+                    ? t("{count} device · {bytes} in total", {
+                        count: rule.memberKeys.length,
+                        bytes: formatBytes(rule.capacityBytes),
+                      })
+                    : t("{count} device", { count: rule.memberKeys.length })
+                  : perDevice && capped
+                    ? t("{count} devices · {bytes} in total", {
+                        count: rule.memberKeys.length,
+                        bytes: formatBytes(rule.capacityBytes),
+                      })
+                    : t("{count} devices", { count: rule.memberKeys.length })}
               </span>
             </span>
           </div>
@@ -111,7 +123,7 @@ export function RuleCard({
                   <span className='font-medium tabular-nums text-foreground'>
                     {formatBytes(rule.usageBytes)}
                   </span>
-                  <span className='text-muted-foreground'>of {capLabel}</span>
+                  <span className='text-muted-foreground'>{t("of {cap}", { cap: capLabel })}</span>
                 </div>
                 <Bar spent={spent} tone={meterTone(spent, allPaused)} />
               </div>
@@ -124,7 +136,7 @@ export function RuleCard({
                 {formatDuration(leftMs)}
               </span>
               <span className='text-[12px] text-muted-foreground'>
-                of {formatDuration(rule.countdownMs ?? 0)}
+                {t("of {cap}", { cap: formatDuration(rule.countdownMs ?? 0) })}
               </span>
             </div>
             <Bar
@@ -139,7 +151,7 @@ export function RuleCard({
                 {formatBytes(rule.usageBytes)}
               </span>
               <span className='text-[12px] text-muted-foreground'>
-                {capped ? `Limit: ${capLabel}` : "No cap"}
+                {capped ? t("Limit: {cap}", { cap: capLabel }) : t("No cap")}
               </span>
             </div>
             {capped && <Bar spent={spent} tone={meterTone(spent, allPaused)} />}
@@ -164,12 +176,15 @@ export function RuleCard({
               )}
             />
             {allPaused
-              ? PAUSED_BECAUSE[pauseCause(rule)]
+              ? t(PAUSED_BECAUSE[pauseCause(rule)])
               : rule.pausedCount > 0
-                ? `Active · ${rule.pausedCount} of ${rule.memberCount} paused`
+                ? t("Active · {paused} of {total} paused", {
+                    paused: rule.pausedCount,
+                    total: rule.memberCount,
+                  })
                 : dormant
-                  ? "Not scheduled today"
-                  : "Active"}
+                  ? t("Not scheduled today")
+                  : t("Active", undefined, "rule")}
           </span>
           <RuleNote rule={rule} measure={measure} nowMs={nowMs} spent={spent} dormant={dormant} />
         </div>
@@ -197,7 +212,11 @@ function RuleNote({
     if (!turns) return null;
     return (
       <span className='text-muted-foreground'>
-        {dormant ? "Resumes" : rule.windowBlocked ? "Opens" : "Closes"} in {turns}
+        {dormant
+          ? t("Resumes in {when}", { when: turns })
+          : rule.windowBlocked
+            ? t("Opens in {when}", { when: turns })
+            : t("Closes in {when}", { when: turns })}
       </span>
     );
   }
@@ -205,13 +224,13 @@ function RuleNote({
   if (rule.allocationBytes > 0 && spent >= NEARING_LIMIT)
     return (
       <span className='rounded-full bg-[color-mix(in_srgb,var(--accent)_18%,transparent)] px-2 py-0.5 font-medium text-[var(--accent)]'>
-        {Math.round(spent * 100)}% used
+        {t("{percent}% used", { percent: Math.round(spent * 100) })}
       </span>
     );
   const resets = timeLeft(rule.periodEndMs, nowMs);
   return (
     <span className='text-muted-foreground'>
-      {resets ? `Resets in ${resets}` : cycleLabel(rule.cycle)}
+      {resets ? t("Resets in {when}", { when: resets }) : cycleLabel(rule.cycle)}
     </span>
   );
 }

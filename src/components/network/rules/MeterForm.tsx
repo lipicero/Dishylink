@@ -2,6 +2,7 @@
 // the rule into a group rather than leaving a second rule on the device.
 
 import { useState } from "react";
+import { t } from "../../../i18n/translate";
 import { groupsForDevice } from "@core/deviceGroup";
 import { removeDeviceRule, type DataMeter } from "../../../hooks/useDataMeter";
 import { useDeviceGroups } from "../../../hooks/useDeviceGroups";
@@ -169,7 +170,7 @@ export function MeterForm({
           }
         >
           <div className='flex items-baseline justify-between'>
-            <span className='text-[13px] font-medium text-foreground'>This cycle</span>
+            <span className='text-[13px] font-medium text-foreground'>{t("This cycle")}</span>
             <span className='text-[13px] tabular-nums text-muted-foreground'>
               <span
                 className={`font-semibold ${remaining <= 0 ? "text-destructive" : "text-foreground"}`}
@@ -200,7 +201,7 @@ export function MeterForm({
         </div>
 
         <SwitchRow
-          title='Auto-pause data'
+          title={t("Auto-pause data")}
           detail={autoPauseDetail(autoPause, mode, several)}
           checked={autoPause}
           onChange={setAutoPause}
@@ -289,7 +290,7 @@ export function MeterForm({
                 }
               >
                 {pending === "delete" ? (
-                  <SpinLoader variant='segment' size={14} label='Deleting' />
+                  <SpinLoader variant='segment' size={14} label={t("Deleting")} />
                 ) : (
                   "Delete rule"
                 )}
@@ -312,7 +313,7 @@ export function MeterForm({
             }
           >
             {pending === "save" ? (
-              <SpinLoader variant='segment' size={16} label='Saving' />
+              <SpinLoader variant='segment' size={16} label={t("Saving")} />
             ) : mode === "timer" ? (
               "Start timer"
             ) : several ? (

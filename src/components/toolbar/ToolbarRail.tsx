@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
+import { t } from "../../i18n/translate";
 import type { ToolbarItem, ToolbarItemId } from "./AppToolbar";
 
 interface ToolbarRailProps {
@@ -19,7 +20,7 @@ export function ToolbarRail({ items, activeId, onSelect }: ToolbarRailProps) {
 
   return (
     <motion.nav
-      aria-label='Dashboard sections'
+      aria-label={t("Dashboard sections")}
       onHoverStart={() => setOpen(true)}
       onHoverEnd={() => setOpen(false)}
       initial={{ opacity: 0, x: -16, y: "-50%" }}

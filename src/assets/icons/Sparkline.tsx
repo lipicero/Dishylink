@@ -2,41 +2,28 @@
 //
 // It stretches to whatever width it is given (preserveAspectRatio="none") and
 // keeps its stroke crisp through that stretch with vectorEffect, so the tile can
-// size it without the line going wedge-shaped.
+// size it without the line going wedge-shaped. The width itself has to stay
+// fixed: these tiles sit in a row with the big number, and a value going from
+// "8" to "1,024" would otherwise steal width and squash the line.
+
+import { useState } from "react";
+import { nextSparkScale } from "../../lib/readings";
 
 const WIDTH = 120;
 const HEIGHT = 30;
-const POINTS = 28;
 
-/** Average the raw samples down to a fixed point count so bursty signals (idle
- *  download traffic especially) read as a calm line instead of a full-height
- *  zigzag. Buckets with no finite sample stay null and break the line. */
-function bucketAverage(values: (number | null)[]): (number | null)[] {
-  const bucketCount = Math.min(POINTS, values.length);
-  if (bucketCount < 2) return values;
-  return Array.from({ length: bucketCount }, (_, bucketIndex) => {
-    const start = Math.floor((bucketIndex * values.length) / bucketCount);
-    const end = Math.floor(((bucketIndex + 1) * values.length) / bucketCount);
-    const slice = values.slice(start, end).filter((value): value is number => value !== null);
-    return slice.length === 0 ? null : slice.reduce((sum, value) => sum + value, 0) / slice.length;
-  });
-}
-
-function buildPath(values: (number | null)[]): string {
-  const points = bucketAverage(values);
-  const finiteValues = points.filter((value): value is number => value !== null);
-  if (finiteValues.length < 2) return "";
-  const maxValue = Math.max(...finiteValues, 1e-9);
-  const stepX = WIDTH / (points.length - 1);
+function buildPath(values: readonly (number | null)[], scale: number): string {
+  if (values.length < 2) return "";
+  const stepX = WIDTH / (values.length - 1);
   let path = "";
   let pathOpen = false;
-  points.forEach((value, pointIndex) => {
+  values.forEach((value, pointIndex) => {
     if (value === null) {
       pathOpen = false;
       return;
     }
     const x = pointIndex * stepX;
-    const y = HEIGHT - 3 - (value / maxValue) * (HEIGHT - 6);
+    const y = HEIGHT - 3 - (value / scale) * (HEIGHT - 6);
     path += `${pathOpen ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`;
     pathOpen = true;
   });
@@ -46,14 +33,22 @@ function buildPath(values: (number | null)[]): string {
 // `values` is also an SVG animation attribute (a string), so it is dropped from
 // the passthrough props rather than fought with.
 interface SparklineProps extends Omit<React.ComponentProps<"svg">, "values"> {
-  values: (number | null)[];
+  values: readonly (number | null)[];
   /** CSS custom property naming the stroke, e.g. "--series-down". */
   colorVar?: string;
 }
 
 /** Renders nothing when there are too few samples to make a line. */
 export function Sparkline({ values, colorVar = "--chart-ink", ...props }: SparklineProps) {
-  const path = buildPath(values);
+  const finiteValues = values.filter(
+    (value): value is number => value !== null && Number.isFinite(value),
+  );
+  const observed = finiteValues.length === 0 ? 0 : Math.max(...finiteValues);
+  const [scale, setScale] = useState(observed);
+  const used = nextSparkScale(scale, observed);
+  if (used !== scale) setScale(used);
+
+  const path = buildPath(values, Math.max(used, 1e-9));
   if (!path) return null;
 
   return (

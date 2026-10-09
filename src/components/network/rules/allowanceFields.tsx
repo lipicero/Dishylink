@@ -34,6 +34,7 @@ import {
   type MemberCandidate,
   type RuleMode,
 } from "./allowanceTerms";
+import { t } from "../../../i18n/translate";
 
 export type { RuleMode };
 
@@ -65,7 +66,7 @@ export function RuleModesInfo() {
       <TooltipTrigger asChild>
         <button
           type='button'
-          aria-label='What each kind of rule does'
+          aria-label={t("What each kind of rule does")}
           className='grid size-5 shrink-0 translate-y-px cursor-help place-items-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
         >
           <InfoIcon className='size-3.5' />
@@ -74,7 +75,7 @@ export function RuleModesInfo() {
       <TooltipContent side='bottom' align='start' className='max-w-64 space-y-1.5 text-left'>
         {RULE_MODES.map((option) => (
           <p key={option.mode}>
-            <span className='font-semibold'>{option.label}:</span> {option.detail}
+            <span className='font-semibold'>{t(option.label)}:</span> {t(option.detail)}
           </p>
         ))}
       </TooltipContent>
@@ -107,7 +108,7 @@ export function RuleModeToggle({
             }`}
           >
             <Icon className='size-3.5' />
-            {option.label}
+            {t(option.label)}
           </button>
         );
       })}
@@ -128,7 +129,7 @@ function CountdownFields({ draft }: { draft: AllowanceDraft }) {
     <div className='space-y-3'>
       <div className='grid grid-cols-2 gap-3'>
         <label className='space-y-1.5'>
-          <span className='text-[12px] font-medium text-foreground'>Hours</span>
+          <span className='text-[12px] font-medium text-foreground'>{t("Hours")}</span>
           <Input
             value={hoursText}
             inputMode='numeric'
@@ -138,7 +139,7 @@ function CountdownFields({ draft }: { draft: AllowanceDraft }) {
           />
         </label>
         <label className='space-y-1.5'>
-          <span className='text-[12px] font-medium text-foreground'>Minutes</span>
+          <span className='text-[12px] font-medium text-foreground'>{t("Minutes")}</span>
           <Input
             value={minutesText}
             inputMode='numeric'
@@ -207,7 +208,7 @@ export function AppliesToField({
   return (
     <div className='space-y-1.5'>
       <div className='flex items-baseline justify-between'>
-        <span className='text-[12px] font-medium text-foreground'>Applies to</span>
+        <span className='text-[12px] font-medium text-foreground'>{t("Applies to")}</span>
         <button
           type='button'
           onClick={() => setOpen(!open)}
@@ -266,13 +267,13 @@ export function AppliesToField({
               <MemberModeChoice
                 selected={!shared}
                 onSelect={() => onSharedChange(false)}
-                title='Each'
+                title={t("Each")}
                 detail='Every device gets the full allowance on its own.'
               />
               <MemberModeChoice
                 selected={shared}
                 onSelect={() => onSharedChange(true)}
-                title='Shared'
+                title={t("Shared")}
                 detail='One allowance between them. They pause together.'
               />
             </div>
@@ -327,7 +328,7 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
     <>
       <div className='grid grid-cols-2 gap-3'>
         <label className='space-y-1.5'>
-          <span className='text-[12px] font-medium text-foreground'>Allowance</span>
+          <span className='text-[12px] font-medium text-foreground'>{t("Allowance")}</span>
           <div className='relative'>
             <Input
               value={allocationText}
@@ -345,9 +346,9 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
           </div>
         </label>
         <div className='space-y-1.5'>
-          <span className='text-[12px] font-medium text-foreground'>Resets</span>
+          <span className='text-[12px] font-medium text-foreground'>{t("Resets")}</span>
           <Select value={kind} onValueChange={(next) => draft.setKind(next as MeterCycle["kind"])}>
-            <SelectTrigger className='w-full text-[13px]' aria-label='Resets'>
+            <SelectTrigger className='w-full text-[13px]' aria-label={t("Resets")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -359,9 +360,9 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
                 >
                   {option.value === "billing"
                     ? billingDay === null
-                      ? "Starlink billing (needs your account)"
-                      : `Starlink billing (${billingDay})`
-                    : option.label}
+                      ? t("Starlink billing (needs your account)")
+                      : t("Starlink billing ({day})", { day: billingDay })
+                    : t(option.label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -375,13 +376,13 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
           max={ceiling}
           step={stepFor(ceiling)}
           onValueChange={([next]) => setAllocationText(String(next))}
-          aria-label='Allowance in gigabytes'
+          aria-label={t("Allowance in gigabytes")}
         />
         <div className='flex shrink-0 flex-col items-center gap-0.5'>
           <button
             type='button'
             onClick={() => setCeiling(stepCeiling(ceiling, Number(allocationText) || 0, 1))}
-            aria-label='Extend the slider'
+            aria-label={t("Extend the slider")}
             className={stepButtonClass}
           >
             <ChevronUpIcon className='size-3' />
@@ -389,7 +390,7 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
           <button
             type='button'
             onClick={() => setCeiling(stepCeiling(ceiling, Number(allocationText) || 0, 1))}
-            title='Change how far the slider reaches'
+            title={t("Change how far the slider reaches")}
             className='cursor-pointer rounded-sm px-1 text-[11.5px] leading-none tabular-nums text-muted-foreground transition-colors hover:bg-accent hover:text-foreground'
           >
             {ceilingLabel(ceiling)}
@@ -397,7 +398,7 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
           <button
             type='button'
             onClick={() => setCeiling(stepCeiling(ceiling, Number(allocationText) || 0, -1))}
-            aria-label='Shorten the slider'
+            aria-label={t("Shorten the slider")}
             className={stepButtonClass}
           >
             <ChevronDownIcon className='size-3' />
@@ -407,18 +408,18 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
 
       {kind === "weekly" && (
         <div className='space-y-1.5'>
-          <span className='text-[12px] font-medium text-foreground'>Resets on</span>
+          <span className='text-[12px] font-medium text-foreground'>{t("Resets on")}</span>
           <Select
             value={String(draft.weekday)}
             onValueChange={(next) => draft.setWeekday(Number(next))}
           >
-            <SelectTrigger className='w-full text-[13px]' aria-label='Resets on'>
+            <SelectTrigger className='w-full text-[13px]' aria-label={t("Resets on")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {WEEKDAYS.map((label, index) => (
                 <SelectItem key={label} value={String(index)}>
-                  {label}
+                  {t(label)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -427,7 +428,7 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
       )}
       {kind === "monthly" && (
         <label className='block space-y-1.5'>
-          <span className='text-[12px] font-medium text-foreground'>Resets on day</span>
+          <span className='text-[12px] font-medium text-foreground'>{t("Resets on day")}</span>
           <div className='relative'>
             <Input
               value={draft.dayText}
@@ -440,7 +441,7 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
               <button
                 type='button'
                 onClick={() => draft.setDayText(String(stepDay(draft.day, 1)))}
-                aria-label='Later in the month'
+                aria-label={t("Later in the month")}
                 className={stepButtonClass}
               >
                 <ChevronUpIcon className='size-3' />
@@ -448,7 +449,7 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
               <button
                 type='button'
                 onClick={() => draft.setDayText(String(stepDay(draft.day, -1)))}
-                aria-label='Earlier in the month'
+                aria-label={t("Earlier in the month")}
                 className={stepButtonClass}
               >
                 <ChevronDownIcon className='size-3' />

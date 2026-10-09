@@ -15,6 +15,7 @@ import { useSelfIdentity } from "../../hooks/useSelfIdentity";
 import { useRememberSelfDevice } from "../../hooks/useRememberSelfDevice";
 import { matchesSelf, selfIdentified } from "../../lib/selfIdentity";
 import { selfDeviceHost } from "../../lib/selfDeviceHost";
+import { t } from "../../i18n/translate";
 import {
   accountRosterNoticeDismissed,
   setAccountRosterNoticeDismissed,
@@ -58,7 +59,7 @@ export function NetworkPanel({
 
   return (
     <DetailsModal
-      title='Network'
+      title={t("Network")}
       size='wide'
       onClose={onClose}
       onBack={selectedKey ? () => setSelectedKey(null) : undefined}
@@ -248,14 +249,14 @@ function NetworkPanelBody({
     <div>
       <SegmentedControl
         variant='glider'
-        label='Network view'
+        label={t("Network view")}
         className='mb-3.5'
         value={tab}
         onChange={setTab}
         options={[
-          { value: "connected", label: <TabLabel text='Connected' count={devices.length} /> },
-          { value: "nodes", label: <TabLabel text='Nodes' count={nodes.length} /> },
-          { value: "rules", label: <TabLabel text='Rules' /> },
+          { value: "connected", label: <TabLabel text={t("Connected")} count={devices.length} /> },
+          { value: "nodes", label: <TabLabel text={t("Nodes")} count={nodes.length} /> },
+          { value: "rules", label: <TabLabel text={t("Rules")} /> },
         ]}
       />
 
@@ -265,15 +266,17 @@ function NetworkPanelBody({
         <Callout
           tone='info'
           className='mb-2.5'
-          dismissLabel='Dismiss this note'
+          dismissLabel={t("Dismiss this note")}
           onDismiss={() => {
             setAccountRosterNoticeDismissed(true);
             setNoticeDismissed(true);
           }}
         >
-          {unreachable ? `${unreachable.message} ` : ""}These devices come from your Starlink
-          account, so they refresh every {CLOUD_CLIENTS_POLL_MS / 1000}&nbsp;s and carry no live
-          throughput.
+          {unreachable ? `${unreachable.message} ` : ""}
+          {t(
+            "These devices come from your Starlink account, so they refresh every {seconds} s and carry no live throughput.",
+            { seconds: CLOUD_CLIENTS_POLL_MS / 1000 },
+          )}
         </Callout>
       )}
 
@@ -283,12 +286,20 @@ function NetworkPanelBody({
             <div className='mb-2 text-[11.5px] text-destructive'>{network.accountRosterError}</div>
           )}
           <ListSection
-            caption={`${devices.length} device${devices.length === 1 ? "" : "s"} · ${
+            caption={`${
+              devices.length === 1
+                ? t("{count} device", { count: devices.length })
+                : t("{count} devices", { count: devices.length })
+            } · ${
               viaCloud
                 ? network.accountRosterError
-                  ? "via your Starlink account, no longer refreshing"
-                  : `via your Starlink account, refreshed every ${CLOUD_CLIENTS_POLL_MS / 1000} s`
-                : `live from the router, refreshed every ${CLIENTS_POLL_MS / 1000} s`
+                  ? t("via your Starlink account, no longer refreshing")
+                  : t("via your Starlink account, refreshed every {seconds} s", {
+                      seconds: CLOUD_CLIENTS_POLL_MS / 1000,
+                    })
+                : t("live from the router, refreshed every {seconds} s", {
+                    seconds: CLIENTS_POLL_MS / 1000,
+                  })
             }`}
           >
             {sortedDevices.map((client, index) => (
@@ -302,7 +313,7 @@ function NetworkPanelBody({
           </ListSection>
           {(accountUnavailable || needsSelfDevice) && (
             <Callout tone='info' iconSeverity='warn' className='mt-2.5'>
-              Pause feature disabled! To enable,{" "}
+              {t("Pause feature disabled! To enable,")}{" "}
               {accountUnavailable && (
                 <>
                   <button
@@ -310,27 +321,27 @@ function NetworkPanelBody({
                     className={inlineLinkButton}
                     onClick={() => requestPanel("account")}
                   >
-                    {needsAccount ? "sign in" : "reconnect"}
+                    {needsAccount ? t("sign in") : t("reconnect")}
                   </button>{" "}
-                  to your Starlink account
+                  {t("to your Starlink account")}
                 </>
               )}
-              {accountUnavailable && needsSelfDevice && " and "}
+              {accountUnavailable && needsSelfDevice && ` ${t("and")} `}
               {needsSelfDevice && (
                 <>
-                  pick the current device you are using under app&rsquo;s{" "}
+                  {t("pick the current device you are using under app's")}{" "}
                   <button
                     type='button'
                     className={inlineLinkButton}
                     onClick={() => requestPanel("settings", "app")}
                   >
-                    settings
+                    {t("settings")}
                   </button>
                 </>
               )}
               .
               {needsSelfDevice &&
-                " That keeps your own device off the list of things this app can cut off."}
+                ` ${t("That keeps your own device off the list of things this app can cut off.")}`}
             </Callout>
           )}
           {/* The device list is where a split record is noticed — one name on two
@@ -352,7 +363,7 @@ function NetworkPanelBody({
       )}
 
       {tab === "nodes" && (
-        <ListSection caption='Router and mesh nodes'>
+        <ListSection caption={t("Router and mesh nodes")}>
           {nodes.map((node) => (
             <NetworkRow
               key={node.key}
@@ -361,7 +372,9 @@ function NetworkPanelBody({
               sub={node.status}
               band={
                 node.devices.length
-                  ? `${node.devices.length} device${node.devices.length === 1 ? "" : "s"}`
+                  ? node.devices.length === 1
+                    ? t("{count} device", { count: node.devices.length })
+                    : t("{count} devices", { count: node.devices.length })
                   : undefined
               }
               showChevron={node.connected}

@@ -9,8 +9,10 @@
 // further out than this file.
 
 import { DayPicker } from "react-day-picker";
+import { es, enUS } from "react-day-picker/locale";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { isSpanish } from "../../lib/locale";
 
 function dateKeyOf(date: Date): string {
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -77,6 +79,7 @@ export function Calendar({
     disabled: { before: today },
     defaultMonth: dateOf(from),
     numberOfMonths: range ? 2 : 1,
+    locale: isSpanish() ? es : enUS,
     className: cn("w-full", className),
     components: {
       Chevron: ({ orientation }: { orientation?: "left" | "right" | "up" | "down" }) => (

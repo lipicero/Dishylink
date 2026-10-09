@@ -2,6 +2,7 @@
 // all phrase an alert the same way because they read it from here.
 
 import type { AlertSeverity, AlertSource } from "@core/alertDefinitions";
+import { isSpanish } from "../../lib/locale";
 
 export const SEVERITY_COLOR: Record<AlertSeverity, string> = {
   critical: "var(--status-critical)",
@@ -31,6 +32,14 @@ export function formatSpan(startMs: number, endMs: number): string {
 
 export function relativeTime(atMs: number, nowMs: number = Date.now()): string {
   const deltaS = Math.max(0, Math.round((nowMs - atMs) / 1000));
+  if (isSpanish()) {
+    if (deltaS < 60) return "ahora";
+    const minutes = Math.round(deltaS / 60);
+    if (minutes < 60) return `hace ${minutes} min`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return `hace ${hours} h`;
+    return `hace ${Math.round(hours / 24)} d`;
+  }
   if (deltaS < 60) return "just now";
   const minutes = Math.round(deltaS / 60);
   if (minutes < 60) return `${minutes}m ago`;

@@ -6,6 +6,7 @@
 // at the moment someone presses Save.
 
 import { useState } from "react";
+import { t } from "../../i18n/translate";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -70,8 +71,10 @@ export function CustomDnsSection({
   return (
     <>
       <SettingRow
-        title='Custom DNS'
-        info="Custom DNS lets you specify IPv4 or IPv6 addresses of one or more alternate DNS servers to be used for lookups instead of the Starlink defaults. A server that doesn't answer stops lookups for every device on the network."
+        title={t("Custom DNS")}
+        info={t(
+          "Custom DNS lets you specify IPv4 or IPv6 addresses of one or more alternate DNS servers to be used for lookups instead of the Starlink defaults. A server that doesn't answer stops lookups for every device on the network.",
+        )}
         infoSeverity='warn'
         caption={
           disabled

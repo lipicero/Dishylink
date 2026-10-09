@@ -9,6 +9,7 @@ import type { WifiClientJson } from "@core/dishClient";
 import type { ClientUsageTotal } from "@core/clientUsage";
 import { formatBytes, formatUptime } from "../../lib/format";
 import { bandLabel, IDLE_AFTER_S, type SignalQuality } from "./networkFormat";
+import { t } from "../../i18n/translate";
 
 export interface DeviceFact {
   key: string;
@@ -48,41 +49,45 @@ export function buildDeviceFacts({
   const facts: DeviceFact[] = [
     {
       key: "status",
-      label: "Status",
-      value: idleSeconds < IDLE_AFTER_S ? "active" : `idle · ${formatUptime(idleSeconds)}`,
+      label: t("Status"),
+      value:
+        idleSeconds < IDLE_AFTER_S
+          ? t("active")
+          : t("idle · {span}", { span: formatUptime(idleSeconds) }),
     },
   ];
-  if (client.role) facts.push({ key: "role", label: "Role", value: client.role });
-  if (upstreamName) facts.push({ key: "connectedTo", label: "Connected to", value: upstreamName });
+  if (client.role) facts.push({ key: "role", label: t("Role"), value: client.role });
+  if (upstreamName)
+    facts.push({ key: "connectedTo", label: t("Connected to"), value: upstreamName });
   // Always shown. A randomized MAC carries no vendor, so the row reads "Private"
   // as the app's does — an absent row just looks broken.
-  facts.push({ key: "manufacturer", label: "Manufacturer", value: vendor ?? "Unknown" });
-  facts.push({ key: "connection", label: "Connection", value: bandLabel(client) });
+  facts.push({ key: "manufacturer", label: t("Manufacturer"), value: vendor ?? t("Unknown") });
+  facts.push({ key: "connection", label: t("Connection"), value: bandLabel(client) });
   if (quality) {
     facts.push({
       key: "signal",
-      label: "Signal",
+      label: t("Signal"),
       value: createElement(
         "span",
         { style: { color: `var(${quality.colorVar})` } },
-        client.iface === "ETH" ? "wired" : `${client.signalStrength} dBm · ${quality.label}`,
+        client.iface === "ETH" ? t("wired") : `${client.signalStrength} dBm · ${quality.label}`,
       ),
     });
   }
   if (client.snr !== undefined && client.snr > 0) {
-    facts.push({ key: "snr", label: "Signal-to-noise", value: `${client.snr} dB` });
+    facts.push({ key: "snr", label: t("Signal-to-noise"), value: `${client.snr} dB` });
   }
   if (client.channelWidth) {
-    facts.push({ key: "bandwidth", label: "Bandwidth", value: `${client.channelWidth} MHz` });
+    facts.push({ key: "bandwidth", label: t("Bandwidth"), value: `${client.channelWidth} MHz` });
   }
   if (client.rxStats?.mcs !== undefined) {
-    facts.push({ key: "mcs", label: "MCS index", value: client.rxStats.mcs });
+    facts.push({ key: "mcs", label: t("MCS index"), value: client.rxStats.mcs });
   }
   if (client.rxStats?.nss !== undefined) {
-    facts.push({ key: "nss", label: "Spatial streams", value: client.rxStats.nss });
+    facts.push({ key: "nss", label: t("Spatial streams"), value: client.rxStats.nss });
   }
-  if (linkRx) facts.push({ key: "rx", label: "Rx rate", value: `${linkRx} Mbps` });
-  if (linkTx) facts.push({ key: "tx", label: "Tx rate", value: `${linkTx} Mbps` });
+  if (linkRx) facts.push({ key: "rx", label: t("Rx rate"), value: `${linkRx} Mbps` });
+  if (linkTx) facts.push({ key: "tx", label: t("Tx rate"), value: `${linkTx} Mbps` });
   if (client.ipAddress) facts.push({ key: "ipv4", label: "IPv4", value: client.ipAddress });
   if (client.ipv6Addresses && client.ipv6Addresses.length > 0) {
     facts.push({
@@ -91,11 +96,12 @@ export function buildDeviceFacts({
       value: createElement("span", { className: "text-[11px]" }, client.ipv6Addresses[0]),
     });
   }
-  if (client.macAddress) facts.push({ key: "mac", label: "MAC address", value: client.macAddress });
+  if (client.macAddress)
+    facts.push({ key: "mac", label: t("MAC address"), value: client.macAddress });
   if (client.associatedTimeS) {
     facts.push({
       key: "connectedFor",
-      label: "Connected for",
+      label: t("Connected for"),
       value: formatUptime(client.associatedTimeS),
     });
   }
@@ -104,7 +110,7 @@ export function buildDeviceFacts({
     // the router's own counter resets on. Preferred whenever it exists.
     facts.push({
       key: "dataUsage",
-      label: "Data used this month",
+      label: t("Data used this month"),
       value: `${formatBytes(total.rxBytes)} ↓ / ${formatBytes(total.txBytes)} ↑`,
     });
   } else if (rxBytes > 0 || txBytes > 0) {
@@ -113,7 +119,7 @@ export function buildDeviceFacts({
     // lifetime or monthly total.
     facts.push({
       key: "dataUsage",
-      label: "Data used (this connection)",
+      label: t("Data used (this connection)"),
       value: `${formatBytes(rxBytes)} ↓ / ${formatBytes(txBytes)} ↑`,
     });
   }

@@ -4,6 +4,7 @@ import type { RadioReading } from "../../hooks/useRadioTemps";
 import { InfoDot } from "../shared/InfoDot";
 import { DataRow, SectionHeading } from "./DataRow";
 import { radioBandLabel } from "./networkFormat";
+import { t } from "../../i18n/translate";
 
 /**
  * The router states no unit for the sensor, so the number is shown bare with a
@@ -15,7 +16,7 @@ export function RadioTempsSection({ radios }: { radios: RadioReading[] }) {
   if (radios.length === 0) return null;
   return (
     <>
-      <SectionHeading title='Radio temperatures'>
+      <SectionHeading title={t("Radio temperatures")}>
         <InfoDot tip="How warm each of the router's Wi-Fi radios is running. If one gets too hot, the router slows that band's Wi-Fi down to cool off — you'll see that noted here when it happens." />
       </SectionHeading>
       <div className='flex flex-col'>

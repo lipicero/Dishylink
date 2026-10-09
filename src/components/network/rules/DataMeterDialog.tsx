@@ -8,6 +8,7 @@ import type { MemberCandidate } from "./allowanceTerms";
 import { MeterForm } from "./MeterForm";
 import { MeterStatus } from "./MeterStatus";
 import { RuleDialogShell } from "./ruleFormBlocks";
+import { t } from "../../../i18n/translate";
 
 export function DataMeterDialog({
   meter,
@@ -63,7 +64,7 @@ export function DataMeterDialog({
       ) : (
         <>
           <DialogHeader className='pb-4'>
-            <DialogTitle className='text-[19px] leading-snug'>Data limit</DialogTitle>
+            <DialogTitle className='text-[19px] leading-snug'>{t("Data limit")}</DialogTitle>
             <DialogDescription className='text-[13px]'>{deviceName}</DialogDescription>
           </DialogHeader>
           <div className='grid min-h-[220px] place-items-center border-t border-border/60'>

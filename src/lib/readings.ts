@@ -10,6 +10,13 @@ import type { TelemetrySample } from "@core/telemetry";
 
 const RECENT_AVERAGE_MS = 60_000;
 const SPARKLINE_MS = 90_000;
+/** Points on a tile's spark line. The span divided by this is the bucket the
+ *  clock grid is snapped to. */
+const SPARKLINE_POINTS = 28;
+/** The scale keeps a peak until the line has fallen clearly below it. A live
+ *  reading wobbles inside that band; following it would redraw the whole
+ *  spark on every refresh. */
+const SPARK_SCALE_HOLD = 0.72;
 const POWER_BUCKET_MEAN_MS = 5_000;
 const POWER_BUCKET_FALLBACK_MS = 60_000;
 
@@ -36,19 +43,70 @@ export function hasRecentReadings(samples: TelemetrySample[], nowMs: number): bo
  * bucket boundary passes the boundary here too, so the trace's newest point steps
  * with the figure instead of creeping ahead of it every second.
  */
+export interface SparkSample {
+  timestampMs: number;
+  value: number | null;
+}
+
 export function sparklineFrom(
   samples: TelemetrySample[],
   getValue: (sample: TelemetrySample) => number | null,
   nowMs: number,
   windowEndMs = Infinity,
-) {
+): SparkSample[] {
   const floorMs = nowMs - SPARKLINE_MS;
   let firstVisible = samples.length;
   while (firstVisible > 0 && samples[firstVisible - 1].timestampMs >= floorMs) firstVisible--;
   let lastVisible = samples.length;
   while (lastVisible > firstVisible && samples[lastVisible - 1].timestampMs >= windowEndMs)
     lastVisible--;
-  return samples.slice(firstVisible, lastVisible).map(getValue);
+  return samples.slice(firstVisible, lastVisible).map((sample) => ({
+    timestampMs: sample.timestampMs,
+    value: getValue(sample),
+  }));
+}
+
+/**
+ * The tile's spark, averaged onto a clock grid.
+ *
+ * Index buckets would move every time a sample arrives: the same burst gets
+ * averaged with different neighbours and the line changes shape as the number
+ * beside it updates. The grid is fixed to the clock, and the trace is always
+ * the same number of slots, so between bucket boundaries the line holds still
+ * and then steps by one point.
+ */
+export function sparklineBuckets(samples: readonly SparkSample[]): (number | null)[] {
+  if (samples.length === 0) return [];
+  let newestMs = samples[0].timestampMs;
+  for (const sample of samples) {
+    if (sample.timestampMs > newestMs) newestMs = sample.timestampMs;
+  }
+  const endMs = newestMs + 1;
+  const startMs = endMs - SPARKLINE_MS;
+  const bucketSpanMs = SPARKLINE_MS / SPARKLINE_POINTS;
+  const originMs = Math.floor(startMs / bucketSpanMs) * bucketSpanMs;
+  const lastIndex = Math.floor((endMs - 1 - originMs) / bucketSpanMs);
+  const firstIndex = lastIndex - SPARKLINE_POINTS + 1;
+  const sums = new Array<number>(SPARKLINE_POINTS).fill(0);
+  const counts = new Array<number>(SPARKLINE_POINTS).fill(0);
+  for (const sample of samples) {
+    if (sample.value === null || !Number.isFinite(sample.value)) continue;
+    const index = Math.floor((sample.timestampMs - originMs) / bucketSpanMs) - firstIndex;
+    if (index < 0 || index >= SPARKLINE_POINTS) continue;
+    sums[index] += sample.value;
+    counts[index] += 1;
+  }
+  return counts.map((count, index) => (count === 0 ? null : sums[index] / count));
+}
+
+/** Vertical scale for a spark. Rises with a new peak immediately, and only
+ *  falls once the line has dropped clearly below the scale it is holding, so
+ *  a refresh does not squash the trace. */
+export function nextSparkScale(held: number, observed: number): number {
+  if (!(held > 0)) return observed;
+  if (observed > held) return observed;
+  if (observed < held * SPARK_SCALE_HOLD) return observed;
+  return held;
 }
 
 /**

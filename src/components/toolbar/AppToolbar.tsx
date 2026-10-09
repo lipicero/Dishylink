@@ -10,6 +10,7 @@ import { NetworkIcon } from "../../assets/icons/NetworkIcon";
 import { UserIcon } from "../../assets/icons/UserIcon";
 import { PlanetIcon } from "../../assets/icons/PlanetIcon";
 import { SettingsIcon } from "../../assets/icons/SettingsIcon";
+import { t } from "../../i18n/translate";
 
 // The `id` of each destination matches the App's panel key, which is how a
 // toolbar lights the open one.
@@ -44,12 +45,14 @@ interface AppToolbarProps {
 export function AppToolbar({ activeId, onSelect }: AppToolbarProps) {
   const toolbarStyle = useSyncExternalStore(subscribeToToolbarStyle, readToolbarStyle);
 
+  const items = TOOLBAR_ITEMS.map((item) => ({ ...item, label: t(item.label) }));
+
   return (
     <AnimatePresence mode='wait'>
       {toolbarStyle === "rail" ? (
-        <ToolbarRail key='rail' items={TOOLBAR_ITEMS} activeId={activeId} onSelect={onSelect} />
+        <ToolbarRail key='rail' items={items} activeId={activeId} onSelect={onSelect} />
       ) : (
-        <ToolbarDock key='dock' items={TOOLBAR_ITEMS} activeId={activeId} onSelect={onSelect} />
+        <ToolbarDock key='dock' items={items} activeId={activeId} onSelect={onSelect} />
       )}
     </AnimatePresence>
   );

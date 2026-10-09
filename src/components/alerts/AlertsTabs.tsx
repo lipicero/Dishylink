@@ -13,6 +13,7 @@ import {
   formatSpan,
   relativeTime,
 } from "./alertFormat";
+import { t } from "../../i18n/translate";
 
 export function ActiveTab({
   active,
@@ -33,7 +34,8 @@ export function ActiveTab({
   // Active is a feed of alerts, not a report on the hardware. Empty means there
   // is nothing to tell you — what the devices' checks currently say is Status's
   // job, and claiming it here would be this tab speaking for that one.
-  if (active.length === 0) return <EmptyState className='px-4 py-8'>No active alerts.</EmptyState>;
+  if (active.length === 0)
+    return <EmptyState className='px-4 py-8'>{t("No active alerts.")}</EmptyState>;
   return (
     <>
       {active.map((a) => {
@@ -41,17 +43,21 @@ export function ActiveTab({
         const startedMs = openedAt.get(id);
         const seenMs = firstSeen.get(id);
         const when = startedMs
-          ? ` · started ${relativeTime(startedMs)}`
+          ? t(" · started {time}", { time: relativeTime(startedMs) })
           : seenMs
-            ? ` · seen ${relativeTime(seenMs)}`
+            ? t(" · seen {time}", { time: relativeTime(seenMs) })
             : "";
         return (
           <AlertRow
             key={id}
             color={SEVERITY_COLOR[a.severity]}
-            title={a.firing}
-            advice={a.advice}
-            meta={`${deviceLabel(a.source)} · ${SEVERITY_LABEL[a.severity]}${when}`}
+            title={t(a.firing)}
+            advice={a.advice ? t(a.advice) : undefined}
+            meta={t("{device} · {severity}{when}", {
+              device: t(deviceLabel(a.source)),
+              severity: t(SEVERITY_LABEL[a.severity]),
+              when,
+            })}
           />
         );
       })}
@@ -73,19 +79,25 @@ export function HistoryTab({
   if (historianUp === false)
     return (
       <EmptyState className='px-4 py-8'>
-        History unavailable — the recorder isn’t running. Live alerts are unaffected.
+        {t("History unavailable — the recorder isn’t running. Live alerts are unaffected.")}
       </EmptyState>
     );
   if (past.length === 0)
-    return <EmptyState className='px-4 py-8'>No alerts cleared in the last 30 days.</EmptyState>;
+    return (
+      <EmptyState className='px-4 py-8'>{t("No alerts cleared in the last 30 days.")}</EmptyState>
+    );
   return (
     <>
       {past.map((e) => (
         <AlertRow
           key={`${e.source}:${e.key}:${e.startMs}`}
           color={SEVERITY_COLOR[e.severity]}
-          title={e.label}
-          meta={`${deviceLabel(e.source)} · lasted ${formatSpan(e.startMs, e.endMs!)} · cleared ${relativeTime(e.endMs!)}`}
+          title={t(e.label)}
+          meta={t("{device} · lasted {span} · cleared {when}", {
+            device: t(deviceLabel(e.source)),
+            span: formatSpan(e.startMs, e.endMs!),
+            when: relativeTime(e.endMs!),
+          })}
         />
       ))}
     </>
@@ -117,11 +129,11 @@ export function StatusTab({
         return (
           <div key={source}>
             <p className='sticky top-0 z-10 flex items-center justify-between gap-2 bg-page px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-ink-muted'>
-              <span>{label}</span>
+              <span>{t(label)}</span>
               {/* Never let a stale snapshot read as a live all-clear. */}
               {!live && (
                 <span className='normal-case tracking-normal'>
-                  Starlink offline · last known status
+                  {t("Starlink offline · last known status")}
                 </span>
               )}
             </p>
@@ -141,7 +153,9 @@ export function StatusTab({
                         : "var(--status-good)",
                   }}
                 />
-                <span className='truncate text-[14px] text-ink'>{c.active ? c.firing : c.ok}</span>
+                <span className='truncate text-[14px] text-ink'>
+                  {t(c.active ? c.firing : c.ok)}
+                </span>
               </div>
             ))}
           </div>

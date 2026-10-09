@@ -4,6 +4,7 @@
 import type { DishObstructionStatsJson } from "@core/dishClient";
 import type { SatelliteFeed } from "../../hooks/useSatellites";
 import { StatLabel } from "../shared/InfoDot";
+import { t } from "../../i18n/translate";
 
 export const skyLegendClass = "flex flex-wrap gap-x-4 gap-y-2.5 pt-1";
 export const skyStatsClass = "mt-2.5 grid grid-cols-2 gap-x-3.5 gap-y-2";
@@ -36,12 +37,12 @@ export function ObstructionKey({
     <div className={`${skyLegendClass}${centred ? " justify-center" : ""}`}>
       <span className={legendItem}>
         <span className={legendCell} style={{ background: "var(--sky-unmapped)", opacity: 0.45 }} />
-        Unmapped
+        {t("Unmapped")}
       </span>
-      <LegendEntry color='var(--sky-clear)' label='Clear view' />
-      <LegendEntry color='var(--sky-partial)' label='Partial' />
-      <LegendEntry color='var(--sky-obstructed)' label='Obstructions' />
-      {withServing && <LegendEntry color='var(--chart-warm)' label='Serving satellite' />}
+      <LegendEntry color='var(--sky-clear)' label={t("Clear view")} />
+      <LegendEntry color='var(--sky-partial)' label={t("Partial")} />
+      <LegendEntry color='var(--sky-obstructed)' label={t("Obstructions")} />
+      {withServing && <LegendEntry color='var(--chart-warm)' label={t("Serving satellite")} />}
     </div>
   );
 }
@@ -97,35 +98,48 @@ export function ObstructionStats({
     <div className={skyStatsClass}>
       <Stat
         centred={centred}
-        label='Sky obstructed'
+        label={t("Sky obstructed")}
         value={`${(fractionObstructed * 100).toFixed(2)}%`}
       />
-      <Stat centred={centred} label='Observed for' value={`${validHours.toFixed(1)} h`} />
+      <Stat centred={centred} label={t("Observed for")} value={`${validHours.toFixed(1)} h`} />
       {showFeed && (
         <>
           <Stat
-            label='Satellites overhead'
-            value={`${stats.inViewCount} · ${stats.serviceableCount} serviceable`}
-            tip="Starlink satellites currently above your horizon. 'Serviceable' ones are high enough (above ~25° elevation) that your dish could actually lock onto them."
+            label={t("Satellites overhead")}
+            value={t("{inView} · {serviceable} serviceable", {
+              inView: stats.inViewCount,
+              serviceable: stats.serviceableCount,
+            })}
+            tip={t(
+              "Starlink satellites currently above your horizon. 'Serviceable' ones are high enough (above ~25° elevation) that your dish could actually lock onto them.",
+            )}
           />
           <Stat
-            label='Next 30 min minimum'
+            label={t("Next 30 min minimum")}
             value={
               stats.forecastMinServiceable30m === null
                 ? "…"
-                : `${stats.forecastMinServiceable30m} serviceable`
+                : t("{count} serviceable", { count: stats.forecastMinServiceable30m })
             }
-            tip="The fewest serviceable satellites at any moment over the next 30 minutes, from SpaceX's published orbits. A low number can mean brief drops as satellites hand off."
+            tip={t(
+              "The fewest serviceable satellites at any moment over the next 30 minutes, from SpaceX's published orbits. A low number can mean brief drops as satellites hand off.",
+            )}
           />
           <Stat
             fullWidth
-            label='Likely serving satellite'
+            label={t("Likely serving satellite")}
             value={
               stats.servingCandidate
-                ? `${stats.servingCandidate.name} · ${stats.servingCandidate.elevationDeg.toFixed(0)}° el · ${stats.servingCandidate.rangeKm.toFixed(0)} km`
-                : "none above 25°"
+                ? t("{name} · {elev}° el · {range} km", {
+                    name: stats.servingCandidate.name,
+                    elev: stats.servingCandidate.elevationDeg.toFixed(0),
+                    range: stats.servingCandidate.rangeKm.toFixed(0),
+                  })
+                : t("none above 25°")
             }
-            tip='Our best guess at the satellite your dish is talking to right now — the highest, unobstructed one, inferred from live orbits.'
+            tip={t(
+              "Our best guess at the satellite your dish is talking to right now — the highest, unobstructed one, inferred from live orbits.",
+            )}
           />
         </>
       )}

@@ -24,6 +24,7 @@
 // beside the control rather than left as a switch that appears to do nothing.
 
 import { unlockAlertSound, playAlertSound } from "./alertSound";
+import { t } from "../i18n/translate";
 import type { AlertSeverity } from "@core/alertDefinitions";
 import {
   notificationsRequested,
@@ -219,7 +220,7 @@ export async function toggleNotifications(): Promise<void> {
   if (host !== null) {
     setState(await host.setNotificationsWanted(true).catch(() => state));
     await host
-      .notify(NOTIFICATIONS_ON_CONFIRMATION.title, NOTIFICATIONS_ON_CONFIRMATION.body)
+      .notify(t(NOTIFICATIONS_ON_CONFIRMATION.title), t(NOTIFICATIONS_ON_CONFIRMATION.body))
       .catch(() => {});
     // Sound the chime once, so its volume is a known quantity before it arrives
     // unannounced during an outage. Skipped when the confirmation could not be
@@ -232,7 +233,11 @@ export async function toggleNotifications(): Promise<void> {
   await Notification.requestPermission();
   setState(webState());
   if (notificationsBlockedReason() !== null) return;
-  sendNotification("test", NOTIFICATIONS_ON_CONFIRMATION.title, NOTIFICATIONS_ON_CONFIRMATION.body);
+  sendNotification(
+    "test",
+    t(NOTIFICATIONS_ON_CONFIRMATION.title),
+    t(NOTIFICATIONS_ON_CONFIRMATION.body),
+  );
   playAlertSound("advisory");
 }
 

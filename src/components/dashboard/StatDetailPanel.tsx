@@ -19,6 +19,7 @@ import { SegmentedControl } from "../ui/segmented-control";
 import { Explainer } from "../ui/explainer";
 import { EmptyState } from "../ui/empty-state";
 import { FigureRow } from "../ui/figure-row";
+import { t } from "../../i18n/translate";
 
 // Window minutes → the historian's matching range, so the live-window energy
 // readout can show the SAME persisted total as the "Total energy used" panel
@@ -136,8 +137,10 @@ export function StatDetailPanel({ detail, samples }: StatDetailPanelProps) {
   const displayEnergyKWh = useHistorianEnergy ? energyHistory.data!.totalKWh : windowEnergy;
   const energyNote = useHistorianEnergy
     ? energyHistory.data!.coverage.fraction >= 0.95
-      ? "over the selected window"
-      : `recorded ${Math.round(energyHistory.data!.coverage.fraction * 100)}% of this window`
+      ? t("over the selected window")
+      : t("recorded {percent}% of this window", {
+          percent: Math.round(energyHistory.data!.coverage.fraction * 100),
+        })
     : coverageNote(windowed, windowMinutes);
 
   // An empty chart is just a confusing box; say so in words until a reading
@@ -170,9 +173,9 @@ export function StatDetailPanel({ detail, samples }: StatDetailPanelProps) {
     return null;
   }, [samples, secondaryGetValue]);
   const secondaryFigures = [
-    { label: "Average", ...detail.formatBig(secondaryAverage) },
+    { label: t("Average"), ...detail.formatBig(secondaryAverage) },
     ...(secondaryCurrent !== null
-      ? [{ label: "Current", ...detail.formatBig(secondaryCurrent) }]
+      ? [{ label: t("Current"), ...detail.formatBig(secondaryCurrent) }]
       : []),
   ];
 
@@ -183,15 +186,15 @@ export function StatDetailPanel({ detail, samples }: StatDetailPanelProps) {
     <>
       <FigureRow
         figures={[
-          { label: "Average", value: average.value, unit: average.unit },
-          { label: "Current", value: current.value, unit: current.unit },
+          { label: t("Average"), value: average.value, unit: average.unit },
+          { label: t("Current"), value: current.value, unit: current.unit },
         ]}
       />
       <SegmentedControl
         options={WINDOW_OPTIONS}
         value={String(windowMinutes)}
         onChange={(minutes) => setWindowMinutes(Number(minutes))}
-        label='Time window'
+        label={t("Time window")}
         className='mb-2.5'
       />
 
@@ -220,7 +223,7 @@ export function StatDetailPanel({ detail, samples }: StatDetailPanelProps) {
                 className='size-[9px] flex-none rounded-full'
                 style={{ background: `var(${chartSeries.colorVar})` }}
               />
-              {chartSeries.label}
+              {t(chartSeries.label)}
             </span>
           ))}
         </div>
@@ -228,9 +231,9 @@ export function StatDetailPanel({ detail, samples }: StatDetailPanelProps) {
 
       {detail.distribution && (
         <section className='mt-4'>
-          <h3 className='text-[15px] font-semibold'>Latency distribution</h3>
+          <h3 className='text-[15px] font-semibold'>{t("Latency distribution")}</h3>
           <p className='mt-0.5 mb-2 text-[12px] font-medium text-muted-foreground'>
-            over the selected window
+            {t("over the selected window")}
           </p>
           <LatencyHistogram samples={windowed} series={detail.series} />
         </section>
@@ -238,9 +241,9 @@ export function StatDetailPanel({ detail, samples }: StatDetailPanelProps) {
 
       {detail.secondaryChart && (
         <section className='mt-4'>
-          <h3 className='text-[15px] font-semibold'>{detail.secondaryChart.title}</h3>
+          <h3 className='text-[15px] font-semibold'>{t(detail.secondaryChart.title)}</h3>
           <p className='mt-0.5 mb-2 text-[12px] font-medium text-muted-foreground'>
-            {detail.secondaryChart.note}
+            {t(detail.secondaryChart.note)}
           </p>
           {hasSecondaryData ? (
             <>
@@ -257,7 +260,7 @@ export function StatDetailPanel({ detail, samples }: StatDetailPanelProps) {
               />
             </>
           ) : (
-            <EmptyState className='py-6'>{detail.secondaryChart.emptyNote}</EmptyState>
+            <EmptyState className='py-6'>{t(detail.secondaryChart.emptyNote)}</EmptyState>
           )}
         </section>
       )}
@@ -269,14 +272,16 @@ export function StatDetailPanel({ detail, samples }: StatDetailPanelProps) {
             {displayEnergyKWh.toFixed(displayEnergyKWh < 1 ? 3 : 2)} kWh
           </div>
           <div className='mt-0.5 text-[12px] font-medium text-muted-foreground'>
-            energy used {energyNote}
+            {t("energy used {note}", { note: energyNote })}
           </div>
         </div>
       )}
 
       {detail.showEnergyHistory && <EnergyHistoryPanel active />}
 
-      <Explainer title={`What is ${detail.label.toLowerCase()}?`}>{detail.explainer}</Explainer>
+      <Explainer title={t("What is {subject}?", { subject: t(detail.label).toLowerCase() })}>
+        {t(detail.explainer)}
+      </Explainer>
     </>
   );
 }

@@ -2,6 +2,7 @@
 // and its throughput charts.
 
 import { useEffect, useState } from "react";
+import { t } from "../../i18n/translate";
 import { throughputMbps, type WifiClientJson } from "@core/dishClient";
 import { usageKey, type ClientUsageTotal } from "@core/clientUsage";
 import type { TelemetrySample } from "@core/telemetry";
@@ -128,7 +129,7 @@ export function DeviceDetail({
     const timer = window.setTimeout(() => {
       setPendingPaused(null);
       setPauseError(
-        new Error("The router has not applied this yet. Give it a moment, then try again."),
+        new Error(t("The router has not applied this yet. Give it a moment, then try again.")),
       );
     }, pauseSettleTimeoutMs(rosterRefreshMs));
     return () => {
@@ -205,7 +206,11 @@ export function DeviceDetail({
               {client.clientId}
             </span>
           )}
-          {paused && <Badge className='mt-1'>{heldByRule ? "Paused · limit" : "Paused"}</Badge>}
+          {paused && (
+            <Badge className='mt-1'>
+              {heldByRule ? t("Paused · limit") : t("Paused", undefined, "device")}
+            </Badge>
+          )}
         </div>
         <div className='flex items-center justify-end gap-1.5'>
           {showMeterControl && client.macAddress && (
@@ -214,7 +219,7 @@ export function DeviceDetail({
                 <Button
                   variant='ghost'
                   size='sm'
-                  aria-label='Data limit'
+                  aria-label={t("Data limit")}
                   className='cursor-pointer px-2'
                   onClick={() => setEditingMeter(true)}
                 >
@@ -224,7 +229,7 @@ export function DeviceDetail({
                   />
                 </Button>
               </TooltipTrigger>
-              <TooltipContent side='top'>Data limit</TooltipContent>
+              <TooltipContent side='top'>{t("Data limit")}</TooltipContent>
             </Tooltip>
           )}
           {showPauseControl && (
@@ -242,12 +247,12 @@ export function DeviceDetail({
                 <SpinLoader
                   variant='segment'
                   size={16}
-                  label={pendingPaused ? "Pausing" : "Unpausing"}
+                  label={pendingPaused ? t("Pausing") : t("Unpausing")}
                 />
               ) : paused ? (
-                "Unpause"
+                t("Unpause")
               ) : (
-                "Pause"
+                t("Pause")
               )}
             </Button>
           )}
@@ -263,10 +268,13 @@ export function DeviceDetail({
           overlayClassName='bg-black/30 backdrop-blur-[2px]'
         >
           <DialogHeader>
-            <DialogTitle className='text-[19px] leading-snug'>Pause “{name}”?</DialogTitle>
+            <DialogTitle className='text-[19px] leading-snug'>
+              {t("Pause “{name}”?", { name })}
+            </DialogTitle>
             <DialogDescription className='text-[13.5px] leading-relaxed'>
-              This will pause internet access for this device. It stays connected to your network,
-              and you can unpause it at any time.
+              {t(
+                "This will pause internet access for this device. It stays connected to your network, and you can unpause it at any time.",
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className='mt-2 gap-2'>
@@ -275,7 +283,7 @@ export function DeviceDetail({
               className='cursor-pointer sm:min-w-28'
               onClick={() => setConfirmingPause(false)}
             >
-              Cancel
+              {t("Cancel")}
             </Button>
             <Button
               className='cursor-pointer sm:min-w-28'
@@ -284,7 +292,7 @@ export function DeviceDetail({
                 void applyPaused(true);
               }}
             >
-              Pause
+              {t("Pause")}
             </Button>
           </DialogFooter>
         </DialogContent>

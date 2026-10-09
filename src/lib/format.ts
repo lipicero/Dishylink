@@ -1,5 +1,7 @@
 // Shared display formatting for telemetry values.
 
+import { intlTag, isSpanish } from "./locale";
+
 export function formatThroughput(bitsPerSecond: number): { value: string; unit: string } {
   if (bitsPerSecond >= 1_000_000_000)
     return { value: (bitsPerSecond / 1e9).toFixed(2), unit: "Gbps" };
@@ -54,7 +56,7 @@ export function formatEventDuration(durationMs: number): string {
 }
 
 export function formatClockTime(timestampMs: number): string {
-  return new Date(timestampMs).toLocaleTimeString([], {
+  return new Date(timestampMs).toLocaleTimeString(intlTag(), {
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
@@ -63,12 +65,15 @@ export function formatClockTime(timestampMs: number): string {
 
 /** Hour and minute only, no seconds ("5:48 PM"), as the official app shows event times. */
 export function formatClockTimeShort(timestampMs: number): string {
-  return new Date(timestampMs).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  return new Date(timestampMs).toLocaleTimeString(intlTag(), {
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 export function formatDateTime(timestampMs: number): string {
   const date = new Date(timestampMs);
-  const datePart = date.toLocaleDateString(undefined, {
+  const datePart = date.toLocaleDateString(intlTag(), {
     day: "numeric",
     month: "short",
     year: "numeric",
@@ -80,6 +85,11 @@ export function formatDateTime(timestampMs: number): string {
  *  Anything else — the "_UNKNOWN" default or an absent field — reads as Unknown
  *  rather than a blank, so the row still says something. */
 export function formatHasActuators(hasActuators: string | undefined): string {
+  if (isSpanish()) {
+    if (hasActuators === "HAS_ACTUATORS_YES") return "Sí";
+    if (hasActuators === "HAS_ACTUATORS_NO") return "No";
+    return "Desconocido";
+  }
   if (hasActuators === "HAS_ACTUATORS_YES") return "Yes";
   if (hasActuators === "HAS_ACTUATORS_NO") return "No";
   return "Unknown";
@@ -125,6 +135,15 @@ export function formatBytes(bytes: number): string {
  *  "3 hours ago", "2 days ago". For last-seen labels, not precise timing. */
 export function formatRelativeTime(timestampMs: number, nowMs: number = Date.now()): string {
   const seconds = Math.max(0, Math.round((nowMs - timestampMs) / 1000));
+  if (isSpanish()) {
+    if (seconds < 60) return "ahora";
+    const minutes = Math.round(seconds / 60);
+    if (minutes < 60) return minutes === 1 ? "hace 1 min" : `hace ${minutes} min`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return hours === 1 ? "hace 1 hora" : `hace ${hours} horas`;
+    const days = Math.round(hours / 24);
+    return days === 1 ? "hace 1 día" : `hace ${days} días`;
+  }
   if (seconds < 60) return "just now";
   const minutes = Math.round(seconds / 60);
   if (minutes < 60) return `${minutes} min ago`;
@@ -163,5 +182,5 @@ export function formatAttitudeState(value: string | undefined): string | null {
  *  the field and the official app shows "Idle" for it, which is the mapping
  *  proto3 specifies and the app confirms. */
 export function formatActuatorState(value: string | undefined): string {
-  return formatDeviceEnum(value, "ACTUATOR_STATE_") ?? "Idle";
+  return formatDeviceEnum(value, "ACTUATOR_STATE_") ?? (isSpanish() ? "En reposo" : "Idle");
 }

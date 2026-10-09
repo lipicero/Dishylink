@@ -4,6 +4,7 @@
 // a click here.
 
 import { Button } from "../ui/button";
+import { t } from "../../i18n/translate";
 import { SpinLoader } from "../loaders/SpinLoader";
 
 export function AccountRosterOffer({
@@ -24,17 +25,18 @@ export function AccountRosterOffer({
       >
         {status === "loading" ? (
           <>
-            <SpinLoader variant='segment' size={16} label='Connecting' />
-            Connecting…
+            <SpinLoader variant='segment' size={16} label={t("Connecting")} />
+            {t("Connecting…")}
           </>
         ) : (
-          "Connect through Cloud"
+          t("Connect through Cloud")
         )}
       </Button>
       <span
         className={error ? "text-[11.5px] text-destructive" : "text-[11.5px] text-muted-foreground"}
       >
-        {error ?? "Your devices, read from your Starlink account until the router answers again."}
+        {error ??
+          t("Your devices, read from your Starlink account until the router answers again.")}
       </span>
     </div>
   );

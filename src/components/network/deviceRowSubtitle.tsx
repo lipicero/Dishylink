@@ -5,6 +5,7 @@
 import type { ReactNode } from "react";
 import type { WifiClientJson } from "@core/dishClient";
 import { deviceSubtitle } from "./networkFormat";
+import { t } from "../../i18n/translate";
 
 /** Subtitle with a leading "This device" for the viewer's own machine, as the
  *  official app shows it ("This device · Apple"). "This device" is brighter and
@@ -16,7 +17,7 @@ export function deviceRowSubtitle(client: WifiClientJson, isSelf: boolean): Reac
   const rest = base === "unknown device" ? "" : ` · ${base}`;
   return (
     <>
-      <span className='font-semibold text-foreground/60'>This device</span>
+      <span className='font-semibold text-foreground/60'>{t("This device")}</span>
       {rest}
     </>
   );

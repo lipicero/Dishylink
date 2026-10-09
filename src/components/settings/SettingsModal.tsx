@@ -17,6 +17,7 @@ import { specForHardware } from "../../lib/dishMesh";
 import { RouterSettingsTab } from "./RouterSettingsTab";
 import { StarlinkSettingsTab } from "./StarlinkSettingsTab";
 import { AppSettingsTab } from "./AppSettingsTab";
+import { t } from "../../i18n/translate";
 
 interface SettingsModalProps {
   onClose: () => void;
@@ -97,12 +98,12 @@ export function SettingsModal({
       <DialogContent className='max-w-md bg-card border-border p-0 gap-0' showCloseButton={false}>
         <DialogHeader className='flex flex-row items-center justify-between px-5 pt-[12px] pb-1 text-left'>
           <DialogTitle className='text-[17px] font-semibold tracking-[0.01em]'>
-            Settings
+            {t("Settings")}
           </DialogTitle>
           <button
             className='inline-flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded-full border-0 bg-[color-mix(in_srgb,var(--ink)_6%,var(--surface))] text-[13px] leading-none text-ink-secondary transition-colors hover:text-foreground'
             onClick={onClose}
-            aria-label='Close'
+            aria-label={t("Close")}
           >
             ✕
           </button>
@@ -111,13 +112,13 @@ export function SettingsModal({
         <div className='px-5 pt-2 pb-1.5'>
           <SegmentedControl
             variant='glider'
-            label='Settings section'
+            label={t("Settings section")}
             value={tab}
             onChange={setTab}
             options={[
-              { value: "starlink", label: "Starlink" },
-              { value: "router", label: "Router" },
-              { value: "app", label: "App" },
+              { value: "starlink", label: t("Starlink") },
+              { value: "router", label: t("Router") },
+              { value: "app", label: t("App") },
             ]}
           />
         </div>

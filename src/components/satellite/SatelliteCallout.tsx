@@ -8,6 +8,7 @@
 import { forwardRef } from "react";
 import type { SatelliteSky } from "../../lib/satellites";
 import { Badge } from "../ui/badge";
+import { t } from "../../i18n/translate";
 
 export interface SelectedSatellite {
   sky: SatelliteSky;
@@ -37,29 +38,30 @@ export const SatelliteCallout = forwardRef<
             >
               {selected.sky.name.replace(/\s*\[DTC\]\s*/, "")}
             </span>
+            {selected.sky.generation && <Badge variant='spec'>{selected.sky.generation}</Badge>}
             {/\[DTC\]/.test(selected.sky.name) && <Badge variant='tag'>DTC</Badge>}
             <button
               className='ml-auto cursor-pointer border-0 bg-transparent pl-1 text-[15px] leading-none text-muted-foreground hover:text-foreground'
-              aria-label='Close satellite details'
+              aria-label={t("Close satellite details")}
               onClick={onClose}
             >
               ×
             </button>
           </div>
           <div className='grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-[3px] font-mono text-[11px] tabular-nums [&>span:nth-child(odd)]:text-muted-foreground [&>span:nth-child(even)]:text-right'>
-            <span>elevation</span>
+            <span>{t("elevation")}</span>
             <span>{selected.sky.elevationDeg.toFixed(1)}°</span>
-            <span>azimuth</span>
+            <span>{t("azimuth")}</span>
             <span>{((selected.sky.azimuthDeg + 360) % 360).toFixed(1)}°</span>
-            <span>altitude</span>
+            <span>{t("altitude")}</span>
             <span>
               {selected.sky.altitudeKm !== undefined
                 ? `${selected.sky.altitudeKm.toFixed(0)} km`
                 : "—"}
             </span>
-            <span>distance</span>
+            <span>{t("distance")}</span>
             <span>{selected.sky.rangeKm.toFixed(0)} km</span>
-            <span>speed</span>
+            <span>{t("speed")}</span>
             <span>
               {selected.sky.speedKmS !== undefined
                 ? `${selected.sky.speedKmS.toFixed(1)} km/s`

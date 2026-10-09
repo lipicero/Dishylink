@@ -17,6 +17,7 @@
 // on the definition in core/alertDefinitions.ts is, so every host agrees about it.
 
 import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { t } from "../i18n/translate";
 import type { DishStatusJson } from "@core/dishClient";
 import { subscribeRouterStatus } from "../lib/routerStatusFeed";
 import type { DishConnectionState } from "./useDishTelemetry";
@@ -295,8 +296,8 @@ export function useDeviceAlerts(
             alert.severity,
             false,
             `alert-${id}`,
-            alertTitle(alert.source, false),
-            alert.firing,
+            t(alertTitle(alert.source, false)),
+            t(alert.firing),
           );
         }
       }
@@ -307,8 +308,8 @@ export function useDeviceAlerts(
             alert.severity,
             true,
             `alert-${id}-cleared`,
-            alertTitle(alert.source, true),
-            alert.ok,
+            t(alertTitle(alert.source, true)),
+            t(alert.ok),
           );
         }
       }

@@ -1,3 +1,5 @@
+import { t } from "../../i18n/translate";
+
 // The marks TelemetryChart draws, split out from the chart that positions them.
 //
 // These are not icons and do not belong in icons/: every one of them is stated
@@ -111,13 +113,29 @@ function Band({
   );
 }
 
+const BAND_LABEL = {
+  fontSize: 10,
+  fontFamily: "var(--font-mono)",
+  fontWeight: 600,
+  fill: "var(--status-critical)",
+} as const;
+
+export interface OutageBandMark {
+  key: string | number;
+  x: number;
+  width: number;
+  label?: string;
+  labelX?: number;
+  labelWidth?: number;
+}
+
 /** When the link was down. */
 export function OutageBands({
   frame,
   bands,
 }: {
   frame: PlotFrame;
-  bands: readonly { key: string | number; x: number; width: number }[];
+  bands: readonly OutageBandMark[];
 }) {
   return (
     <>
@@ -131,6 +149,48 @@ export function OutageBands({
           opacity={0.09}
         />
       ))}
+    </>
+  );
+}
+
+/** Why that band happened, drawn after the series so the line does not cover
+ *  the word. The chip can be wider than the band: a hairline still has to say
+ *  "Router". */
+export function OutageBandLabels({
+  frame,
+  bands,
+}: {
+  frame: PlotFrame;
+  bands: readonly OutageBandMark[];
+}) {
+  return (
+    <>
+      {bands.map(
+        (band) =>
+          band.label &&
+          band.labelX !== undefined &&
+          band.labelWidth !== undefined && (
+            <g key={band.key}>
+              <rect
+                x={band.labelX}
+                y={frame.top + 1}
+                width={band.labelWidth}
+                height={14}
+                rx={2}
+                fill='var(--surface)'
+              />
+              <text
+                x={band.labelX + band.labelWidth / 2}
+                y={frame.top + 8}
+                textAnchor='middle'
+                dominantBaseline='central'
+                {...BAND_LABEL}
+              >
+                {band.label}
+              </text>
+            </g>
+          ),
+      )}
     </>
   );
 }
@@ -162,7 +222,7 @@ export function NoDataBands({
               textAnchor='middle'
               {...AXIS_TEXT}
             >
-              no data
+              {t("no data")}
             </text>
           )}
         </g>

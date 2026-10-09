@@ -6,6 +6,12 @@ import "./index.css";
 import { afterEach, beforeEach } from "vitest";
 import { cleanup } from "vitest-browser-react";
 import { noteCloudSessionChanged } from "./lib/cloudHost";
+import { setLocale } from "./lib/locale";
+
+// Component tests look for the English labels the UI was written with. The app
+// defaults to Spanish; pin English for the run, and again before each test so
+// one that switches language cannot leak into the next.
+setLocale("en");
 
 // One account answer is shared by every surface in the app, and by every test in
 // a file. Left alone, the first test decides what the account says for all of
@@ -15,4 +21,7 @@ afterEach(() => {
   cleanup();
   noteCloudSessionChanged();
 });
-beforeEach(() => noteCloudSessionChanged());
+beforeEach(() => {
+  setLocale("en");
+  noteCloudSessionChanged();
+});

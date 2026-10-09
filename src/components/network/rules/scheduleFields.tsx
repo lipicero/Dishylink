@@ -15,6 +15,7 @@ import {
   WEEKDAY_LABELS,
   type ScheduleDraft,
 } from "./scheduleTerms";
+import { t } from "../../../i18n/translate";
 
 /** A schedule's hours, read back rather than edited: the mode it opens the
  *  device on, and each window it names. Shared by every card that shows a
@@ -41,8 +42,8 @@ export function ScheduleWindows({
             : "text-[11px] tracking-wide text-muted-foreground uppercase"
         }
       >
-        <span>{schedule.mode === "allow" ? "Online" : "Offline"}</span>
-        {compact && <span>Hours</span>}
+        <span>{schedule.mode === "allow" ? t("Online") : t("Offline")}</span>
+        {compact && <span>{t("Hours")}</span>}
       </div>
       {shown.map((window, index) => (
         <div
@@ -79,20 +80,20 @@ export function ScheduleFields({ draft }: { draft: ScheduleDraft }) {
     <div className='space-y-3'>
       <div className='flex items-center justify-between gap-3'>
         <div>
-          <div className='text-[13px] font-medium text-foreground'>Schedule</div>
+          <div className='text-[13px] font-medium text-foreground'>{t("Schedule")}</div>
           <div className='text-[12px] text-muted-foreground'>
             {draft.mode === "allow"
-              ? "Online during these times, paused the rest of the days."
-              : "Paused during these times, online otherwise."}
+              ? t("Online during these times, paused the rest of the days.")
+              : t("Paused during these times, online otherwise.")}
           </div>
         </div>
         <SegmentedControl
-          label='What the schedule does'
+          label={t("What the schedule does")}
           value={draft.mode}
           onChange={draft.setMode}
           options={[
-            { value: "allow", label: "Online" },
-            { value: "block", label: "Offline" },
+            { value: "allow", label: t("Online") },
+            { value: "block", label: t("Offline") },
           ]}
         />
       </div>
@@ -124,20 +125,20 @@ export function ScheduleFields({ draft }: { draft: ScheduleDraft }) {
                       : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  {repeatLabel}
+                  {t(repeatLabel)}
                 </button>
               ))}
             </div>
             <div className='flex min-w-0 items-center gap-2'>
               {window.repeat !== "weekly" && (
                 <span className='truncate text-[12px] text-muted-foreground'>
-                  {runLabel(window) ?? "Pick a date"}
+                  {runLabel(window) ?? t("Pick a date")}
                 </span>
               )}
               <button
                 type='button'
                 onClick={() => draft.removeWindow(index)}
-                aria-label='Remove this schedule'
+                aria-label={t("Remove this schedule")}
                 className='grid size-6 shrink-0 cursor-pointer place-items-center rounded-md text-muted-foreground transition-colors hover:bg-[color-mix(in_srgb,var(--ink)_10%,transparent)] hover:text-foreground'
               >
                 <X className='size-3.5' />
@@ -160,7 +161,7 @@ export function ScheduleFields({ draft }: { draft: ScheduleDraft }) {
                         : "bg-[color-mix(in_srgb,var(--ink)_8%,transparent)] text-muted-foreground hover:text-foreground"
                     }`}
                   >
-                    {label}
+                    {t(label)}
                   </button>
                 );
               })}
@@ -176,12 +177,12 @@ export function ScheduleFields({ draft }: { draft: ScheduleDraft }) {
 
           <div className='flex flex-wrap items-center gap-x-5 gap-y-3'>
             <TimeOfDayField
-              label='From'
+              label={t("From")}
               value={window.startMinute}
               onChange={(startMinute) => draft.updateWindow(index, { startMinute })}
             />
             <TimeOfDayField
-              label='To'
+              label={t("To")}
               value={window.endMinute}
               onChange={(endMinute) => draft.updateWindow(index, { endMinute })}
             />
@@ -189,7 +190,7 @@ export function ScheduleFields({ draft }: { draft: ScheduleDraft }) {
 
           {window.endMinute <= window.startMinute && (
             <p className='text-[11.5px] text-muted-foreground'>
-              Runs past midnight into the next day.
+              {t("Runs past midnight into the next day.")}
             </p>
           )}
         </div>
@@ -202,7 +203,7 @@ export function ScheduleFields({ draft }: { draft: ScheduleDraft }) {
         onClick={draft.addWindow}
       >
         <Plus className='size-3.5' />
-        {draft.windows.length === 0 ? "Set a schedule" : "Add another time"}
+        {draft.windows.length === 0 ? t("Set a schedule") : t("Add another time")}
       </Button>
     </div>
   );

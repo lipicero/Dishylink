@@ -1,4 +1,5 @@
 import { cloudRequest, type CloudRequest, type CloudReply } from "./cloudHost";
+import { t } from "../i18n/translate";
 import { AccountRequiredError } from "./routerClientUpdate";
 import type { DishConfigJson } from "@core/dishClient";
 
@@ -13,6 +14,6 @@ export async function applyDishConfigUpdate(
   const reply = await request({ path: "/cloud/dish-config", method: "POST", body: changes });
   if (reply.status === 200) return;
   const message = (reply.body as { message?: string })?.message ?? `HTTP ${reply.status}`;
-  if (reply.status === 428) throw new AccountRequiredError(message);
-  throw new Error(`Starlink rejected the config change: ${message}`);
+  if (reply.status === 428) throw new AccountRequiredError(t(message));
+  throw new Error(t("Starlink rejected the config change: {detail}", { detail: t(message) }));
 }

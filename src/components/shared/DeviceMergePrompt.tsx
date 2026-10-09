@@ -11,6 +11,7 @@ import { useOuiRegistry } from "../../hooks/useOuiRegistry";
 import { classifyDevice } from "../../lib/deviceKind";
 import { DeviceTypeIcon } from "../../assets/icons/DeviceTypeIcon";
 import { MergeIcon } from "../../assets/icons/MergeIcon";
+import { t } from "../../i18n/translate";
 
 export function DeviceMergePrompt({
   candidates,
@@ -49,18 +50,19 @@ export function DeviceMergePrompt({
         <div className='flex items-center gap-1.5'>
           <MergeIcon size={15} className='text-chart-warm' />
           <span className='text-[14.5px] font-[650] text-foreground'>
-            Possible duplicate device
+            {t("Possible duplicate device")}
           </span>
           {candidates.length > 1 && (
             <span className='ml-auto text-[11px] text-muted-foreground'>
-              {candidates.length - 1} more to review
+              {t("{count} more to review", { count: candidates.length - 1 })}
             </span>
           )}
         </div>
         <div className='mt-1 text-[13.5px] leading-[1.55] text-ink-secondary'>
-          This device appears twice, both named{" "}
-          <span className='font-medium text-foreground'>{candidate.detail}</span>. This happens when
-          a device changes its Wi-Fi address and your router treats it as new.
+          {t(
+            "This device appears twice, both named {name}. This happens when a device changes its Wi-Fi address and your router treats it as new.",
+            { name: candidate.detail },
+          )}
         </div>
 
         <div className='mt-2.5 flex items-stretch gap-2'>
@@ -78,10 +80,15 @@ export function DeviceMergePrompt({
             a total it does not produce. The history joins either way. */}
         <div className='mt-2.5 text-[13.5px] leading-[1.55] text-ink-secondary'>
           {candidate.foldsBytes
-            ? `Combining keeps one device with ${formatBytes(
-                candidate.resultRxBytes + candidate.resultTxBytes,
-              )} this month, and joins their usage history.`
-            : "These cover different months, so their usage history is joined but the monthly figures stay as they are."}
+            ? t(
+                "Combining keeps one device with {bytes} this month, and joins their usage history.",
+                {
+                  bytes: formatBytes(candidate.resultRxBytes + candidate.resultTxBytes),
+                },
+              )
+            : t(
+                "These cover different months, so their usage history is joined but the monthly figures stay as they are.",
+              )}
         </div>
 
         <div className='mt-2.5 flex items-center gap-3'>
@@ -89,13 +96,13 @@ export function DeviceMergePrompt({
             className='cursor-pointer rounded-md border-0 bg-foreground px-2.5 py-1 text-[12px] font-semibold text-background'
             onClick={() => onAnswer(candidate, true)}
           >
-            Same device
+            {t("Same device")}
           </button>
           <button
             className='cursor-pointer border-0 bg-transparent p-0 text-[12px] font-medium text-muted-foreground transition-colors hover:text-foreground'
             onClick={() => onAnswer(candidate, false)}
           >
-            Different devices
+            {t("Different devices")}
           </button>
         </div>
       </div>

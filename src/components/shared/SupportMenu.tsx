@@ -13,6 +13,7 @@ import { XIcon } from "../../assets/icons/XIcon";
 import { LinkedinIcon } from "../../assets/icons/LinkedinIcon";
 import { ShieldIcon } from "../../assets/icons/ShieldIcon";
 import { ScaleIcon } from "../../assets/icons/ScaleIcon";
+import { t } from "../../i18n/translate";
 import { SUPPORT_LINKS } from "./supportLinks";
 
 type IconComponent = React.ComponentType<React.ComponentProps<"svg"> & { size?: number }>;
@@ -139,8 +140,10 @@ export function SupportMenu() {
       <PopoverTrigger asChild>
         <button
           className='relative inline-flex size-8 cursor-pointer items-center justify-center rounded-full border-0 bg-card text-ink-secondary transition-colors hover:text-foreground'
-          aria-label={updateVersion ? "Support and more (update available)" : "Support and more"}
-          title='Support & more'
+          aria-label={
+            updateVersion ? t("Support and more (update available)") : t("Support and more")
+          }
+          title={t("Support & more")}
         >
           <HeartIcon />
           {updateVersion && (
@@ -172,7 +175,7 @@ export function SupportMenu() {
         {updateVersion && (
           <div className={SECTION}>
             <div className={cn(MENU_LABEL, "flex items-center gap-1.5")}>
-              Update available
+              {t("Update available")}
               <span className='size-1 rounded-full bg-red-500 shadow-[0_0_4px_1.5px_rgba(239,68,68,0.85)]' />
             </div>
             <MenuLink
@@ -180,16 +183,18 @@ export function SupportMenu() {
               icon={DownloadIcon}
               iconClassName='text-status-good'
             >
-              Download v{updateVersion}
+              {t("Download v{version}", { version: updateVersion })}
             </MenuLink>
           </div>
         )}
 
         {SECTIONS.map((section) => (
           <div key={section.label} className={SECTION}>
-            <div className={MENU_LABEL}>{section.label}</div>
+            <div className={MENU_LABEL}>{t(section.label)}</div>
             {section.items.map((item) => (
-              <MenuLink key={item.href} {...item} />
+              <MenuLink key={item.href} {...item}>
+                {typeof item.children === "string" ? t(item.children) : item.children}
+              </MenuLink>
             ))}
           </div>
         ))}

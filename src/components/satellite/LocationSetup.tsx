@@ -14,6 +14,7 @@ import {
 } from "../../lib/observerLocation";
 import { GpsIcon } from "../../assets/icons/GpsIcon";
 import { MapPinIcon } from "../../assets/icons/MapPinIcon";
+import { t } from "../../i18n/translate";
 
 /** The primary action: the ink fill the rest of the app gives its action buttons. */
 const saveButton =
@@ -72,9 +73,10 @@ export function LocationSetup({
     // behind it has to be pushed out of focus rather than read through.
     <div className='mt-3 flex flex-col gap-2.5 rounded-lg border border-[#8b97a824] bg-[#00000073] px-[13px] py-3 backdrop-blur-xl'>
       <p className='text-[12.5px] leading-[1.5] text-ink-secondary'>
-        To show the satellites passing over you, we need to know where your dish is. Tip: long-press
-        your home in Google Maps, or open the iPhone <strong>Compass</strong> app, and paste what it
-        shows.
+        {t(
+          "To show the satellites passing over you, we need to know where your dish is. Tip: long-press your home in Google Maps, or open the iPhone",
+        )}{" "}
+        <strong>{t("Compass")}</strong> {t("app, and paste what it shows.")}
       </p>
       <div className='flex gap-2'>
         <input
@@ -86,11 +88,11 @@ export function LocationSetup({
           onKeyDown={(keyEvent) => {
             if (keyEvent.key === "Enter") submitPasted();
           }}
-          aria-label='Latitude, longitude'
+          aria-label={t("Latitude, longitude")}
           className='min-w-0 flex-1 rounded-full border border-[color-mix(in_srgb,var(--ink)_18%,transparent)] bg-[color-mix(in_srgb,var(--ink)_6%,transparent)] px-3.5 py-[7px] font-mono text-[12px] text-foreground placeholder:text-ink-secondary focus:border-[color-mix(in_srgb,var(--ink)_40%,transparent)] focus:outline-none'
         />
         <button onClick={submitPasted} className={saveButton}>
-          Save
+          {t("Save")}
         </button>
       </div>
       <div className='flex flex-wrap gap-x-5 gap-y-2'>
@@ -100,14 +102,14 @@ export function LocationSetup({
           className={sourceButton}
         >
           <GpsIcon />
-          {busySource === "device" ? "Locating…" : "Use this device location"}
+          {busySource === "device" ? t("Locating…") : t("Use this device location")}
         </button>
         <button onClick={useIpLocation} disabled={busySource !== null} className={sourceButton}>
           <MapPinIcon />
-          {busySource === "ip" ? "Looking up…" : "Approximate from IP"}
+          {busySource === "ip" ? t("Looking up…") : t("Approximate from IP")}
         </button>
       </div>
-      {errorText && <div className='text-[12px] text-status-critical'>{errorText}</div>}
+      {errorText && <div className='text-[12px] text-status-critical'>{t(errorText)}</div>}
     </div>
   );
 }

@@ -7,6 +7,7 @@
 import { useMemo, useState } from "react";
 import { formatThroughputLabel, formatThroughputTick } from "../../lib/format";
 import { THROUGHPUT_SERIES } from "../../lib/statDetails";
+import { t } from "../../i18n/translate";
 import type { TelemetrySample } from "@core/telemetry";
 import { InfoDot } from "../shared/InfoDot";
 import { TelemetryChart, type ChartSeries } from "../shared/TelemetryChart";
@@ -52,7 +53,7 @@ export function DeviceThroughput({
 
   return (
     <>
-      <SectionHeading title='Throughput'>
+      <SectionHeading title={t("Throughput")}>
         {!recordingStopped && (
           <InfoDot tip='How much data this device is transferring right now. Stream a video and watch it jump.' />
         )}
@@ -61,7 +62,7 @@ export function DeviceThroughput({
             options={WINDOW_OPTIONS}
             value={String(windowMinutes)}
             onChange={(minutes) => setWindowMinutes(Number(minutes))}
-            label='Chart time window'
+            label={t("Chart time window")}
             className='ml-auto'
           />
         )}
@@ -75,14 +76,14 @@ export function DeviceThroughput({
       ) : (
         <>
           <DirectionChart
-            label='Download'
+            label={t("Download")}
             liveBps={downMbps === null ? null : downMbps * 1_000_000}
             series={DOWNLOAD_SERIES}
             samples={chartHistory}
             windowMinutes={windowMinutes}
           />
           <DirectionChart
-            label='Upload'
+            label={t("Upload")}
             liveBps={upMbps === null ? null : upMbps * 1_000_000}
             series={UPLOAD_SERIES}
             samples={chartHistory}

@@ -1,5 +1,6 @@
 import { useRef, type ReactNode } from "react";
 import { Dialog as DialogPrimitive } from "radix-ui";
+import { t } from "../../i18n/translate";
 
 interface PromptDialogProps {
   icon: ReactNode;
@@ -46,7 +47,7 @@ export function PromptDialog({
             />
 
             <DialogPrimitive.Close
-              aria-label='Dismiss'
+              aria-label={t("Dismiss")}
               className='absolute top-5 right-5 inline-flex size-8 cursor-pointer items-center justify-center rounded-full border-0 bg-transparent text-[13px] text-ink-secondary/60 transition-colors hover:bg-[color-mix(in_srgb,var(--ink)_8%,transparent)] hover:text-ink'
             >
               ✕
@@ -77,14 +78,14 @@ export function PromptDialog({
                   onClick={onLater}
                   className='cursor-pointer border-0 bg-transparent text-[13px] text-ink-secondary/80 transition-colors hover:text-ink'
                 >
-                  Maybe later
+                  {t("Maybe later")}
                 </button>
                 <button
                   type='button'
                   onClick={onNever}
                   className='cursor-pointer border-0 bg-transparent text-[12px] text-ink-secondary/45 transition-colors hover:text-ink-secondary'
                 >
-                  Don&rsquo;t ask again
+                  {t("Don't ask again")}
                 </button>
               </div>
             </div>

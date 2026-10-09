@@ -13,6 +13,7 @@ import { formatDeviceEnum, formatUptime } from "../../lib/format";
 import { DataRow, SectionHeading } from "./DataRow";
 import { DeviceRow } from "./NetworkRow";
 import { MeshNodeNameEditor, RenameButton } from "./DeviceNameEditor";
+import { t } from "../../i18n/translate";
 import { RadioTempsSection } from "./RadioTempsSection";
 import { bandLabel, clientEntryKey } from "./networkFormat";
 import type { NodeEntry } from "./nodeRoster";
@@ -66,7 +67,7 @@ export function NodeDetail({
           <div className='flex items-center gap-2'>
             <span className='text-[18px] font-bold text-foreground'>{node.name}</span>
             {canRename && !editing && (
-              <RenameButton label='Rename node' onClick={() => setEditing(true)} />
+              <RenameButton label={t("Rename node")} onClick={() => setEditing(true)} />
             )}
           </div>
           <div className='text-[11.5px] font-medium text-muted-foreground'>{node.status}</div>
@@ -83,7 +84,7 @@ export function NodeDetail({
       )}
 
       <div className='flex flex-col'>
-        {client?.role && <DataRow label='Role' value={client.role} />}
+        {client?.role && <DataRow label={t("Role")} value={client.role} />}
         {/* A mesh node is a client entry like any other, so it carries the same
             radio detail — the app's node screen leads with these two, and they
             are what a "move it closer" prompt is actually asking you to fix.
@@ -92,27 +93,27 @@ export function NodeDetail({
             backhaul as "good" while the Starlink app called the same node slow.
             The app prints the raw dBm too, and judges the node separately. */}
         {client?.signalStrength !== undefined && client.iface !== "ETH" && (
-          <DataRow label='Signal strength' value={`${client.signalStrength} dBm`} />
+          <DataRow label={t("Signal strength")} value={`${client.signalStrength} dBm`} />
         )}
         {linkRxMbps !== undefined && (
-          <DataRow label='Rx rate' value={`${Math.round(linkRxMbps)} Mbps`} />
+          <DataRow label={t("Rx rate")} value={`${Math.round(linkRxMbps)} Mbps`} />
         )}
-        {client && <DataRow label='Connection' value={bandLabel(client)} />}
-        {client?.iface && <DataRow label='Interface' value={client.iface} />}
-        {isRouter && <DataRow label='Uplink' value='Starlink dish' />}
-        {client?.macAddress && <DataRow label='MAC address' value={client.macAddress} />}
-        {client?.deviceId && <DataRow label='Device ID' value={client.deviceId} />}
-        {client?.ipAddress && <DataRow label='IP address' value={client.ipAddress} />}
-        {firmware && <DataRow label='Firmware' value={firmware} />}
+        {client && <DataRow label={t("Connection")} value={bandLabel(client)} />}
+        {client?.iface && <DataRow label={t("Interface")} value={client.iface} />}
+        {isRouter && <DataRow label={t("Uplink")} value={t("Starlink dish")} />}
+        {client?.macAddress && <DataRow label={t("MAC address")} value={client.macAddress} />}
+        {client?.deviceId && <DataRow label={t("Device ID")} value={client.deviceId} />}
+        {client?.ipAddress && <DataRow label={t("IP address")} value={client.ipAddress} />}
+        {firmware && <DataRow label={t("Firmware")} value={firmware} />}
         {(meshConfig?.hardwareVersion ?? routerHardware) && (
-          <DataRow label='Hardware' value={meshConfig?.hardwareVersion ?? routerHardware!} />
+          <DataRow label={t("Hardware")} value={meshConfig?.hardwareVersion ?? routerHardware!} />
         )}
         {routerUptimeS !== undefined && (
-          <DataRow label='Uptime' value={formatUptime(Number(routerUptimeS))} />
+          <DataRow label={t("Uptime")} value={formatUptime(Number(routerUptimeS))} />
         )}
-        {lastRebootReason && <DataRow label='Last reboot' value={lastRebootReason} />}
+        {lastRebootReason && <DataRow label={t("Last reboot")} value={lastRebootReason} />}
         {wifiConfig?.countryCode && isRouter && (
-          <DataRow label='Region' value={wifiConfig.countryCode} />
+          <DataRow label={t("Region")} value={wifiConfig.countryCode} />
         )}
       </div>
 
@@ -123,7 +124,7 @@ export function NodeDetail({
           device, not a leaf. */}
       {node.connected && (
         <div>
-          <SectionHeading title='Connected devices' />
+          <SectionHeading title={t("Connected devices")} />
           {node.devices.length === 0 ? (
             <div className='text-[11.5px] font-medium text-muted-foreground'>
               No devices are using this node right now.

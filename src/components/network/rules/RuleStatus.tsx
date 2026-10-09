@@ -3,6 +3,7 @@
 // carry the whole allowance is measured against nothing.
 
 import { CalendarClock, Gauge, Timer, Wifi } from "lucide-react";
+import { t } from "../../../i18n/translate";
 import { classifyDevice } from "../../../lib/deviceKind";
 import { formatBytes, formatDateTime } from "../../../lib/format";
 import { vendorForMac } from "../../../lib/macVendor";
@@ -178,12 +179,15 @@ export function RuleStatus({
         {leading === "timer" ? (
           <RuleStats>
             <Stat
-              label='Time left'
+              label={t("Time left")}
               value={formatDuration(leftMs)}
               tone={leftMs <= 0 ? "text-destructive" : undefined}
             />
-            <Stat label='Pauses at' value={leftMs > 0 ? endsAtLabel(leftMs, nowMs) : "now"} />
-            <Stat label='Set for' value={formatDuration(rule.countdownMs!)} />
+            <Stat
+              label={t("Pauses at")}
+              value={leftMs > 0 ? endsAtLabel(leftMs, nowMs) : t("now")}
+            />
+            <Stat label={t("Set for")} value={formatDuration(rule.countdownMs!)} />
           </RuleStats>
         ) : leading === "schedule" ? (
           <RuleStats>
@@ -198,7 +202,7 @@ export function RuleStatus({
               value={rule.windowEndMs ? (timeLeft(rule.windowEndMs, nowMs) ?? "—") : "—"}
             />
             <Stat
-              label='Right now'
+              label={t("Right now")}
               value={
                 scheduleDormant(rule, nowMs)
                   ? "Not scheduled"
@@ -208,7 +212,7 @@ export function RuleStatus({
               }
             />
             <Stat
-              label='Devices'
+              label={t("Devices")}
               value={`${rule.memberKeys.length} device${rule.memberKeys.length === 1 ? "" : "s"}`}
             />
           </RuleStats>
@@ -228,8 +232,11 @@ export function RuleStatus({
                     : undefined
                 }
               />
-              <Stat label='Resets in' value={timeLeft(rule.periodEndMs, nowMs) ?? "never"} />
-              <Stat label='Cycle' value={cycleLabel(rule.cycle)} />
+              <Stat
+                label={t("Resets in")}
+                value={timeLeft(rule.periodEndMs, nowMs) ?? t("never")}
+              />
+              <Stat label={t("Cycle")} value={cycleLabel(rule.cycle)} />
             </RuleStats>
           )
         )}
@@ -237,7 +244,7 @@ export function RuleStatus({
         {/* A rule that leads with its hours can still carry an allowance, and one
             that leads with a timer never does. */}
         {leading === "schedule" && capped && (
-          <Section label='Data allowance'>
+          <Section label={t("Data allowance")}>
             <div className='flex items-baseline justify-between gap-3'>
               <span className='text-[15px] font-semibold tabular-nums text-foreground'>
                 {formatBytes(rule.usageBytes)}
@@ -252,7 +259,7 @@ export function RuleStatus({
         )}
 
         {perDevice ? (
-          <Section label='Devices'>
+          <Section label={t("Devices")}>
             <div className='space-y-3'>
               {rule.members.map((member) => (
                 <MemberMeter
@@ -266,7 +273,7 @@ export function RuleStatus({
           </Section>
         ) : (
           (leading === "schedule" || rule.memberCount > 1) && (
-            <Section label='Devices'>
+            <Section label={t("Devices")}>
               <div className='space-y-1'>
                 {rule.members.map((member) => (
                   <div

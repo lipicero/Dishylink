@@ -6,6 +6,7 @@ import type { TelemetrySample } from "@core/telemetry";
 import { StatDetailPanel, type StatDetail } from "./StatDetailPanel";
 import { LatencyQualityPanel } from "./LatencyQualityPanel";
 import { SegmentedControl } from "../ui/segmented-control";
+import { t } from "../../i18n/translate";
 
 type LatencyView = "live" | "quality";
 
@@ -26,10 +27,10 @@ export function LatencyDetailPanel({
   return (
     <div>
       <SegmentedControl
-        options={VIEW_TABS}
+        options={VIEW_TABS.map((tab) => ({ ...tab, label: t(tab.label) }))}
         value={view}
         onChange={setView}
-        label='Latency view'
+        label={t("Latency view")}
         variant='glider'
         className='mb-1'
       />

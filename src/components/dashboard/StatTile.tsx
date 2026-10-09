@@ -53,7 +53,7 @@ export function StatTile({
           <Sparkline
             values={sparkValues}
             colorVar={sparkColorVar}
-            className='ml-1 block min-w-0 flex-1'
+            className='ml-auto block h-[30px] w-20 shrink-0'
           />
         )}
       </div>

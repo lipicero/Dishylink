@@ -5,6 +5,7 @@ import { useState } from "react";
 import { formatDuration, MAX_COUNTDOWN_MS, splitDuration, type MeterCycle } from "@core/dataMeter";
 import type { Schedule } from "@core/schedule";
 import type { ScheduleDraft } from "./scheduleTerms";
+import { intlTag, isSpanish } from "../../../lib/locale";
 
 export { formatDuration, splitDuration };
 
@@ -43,6 +44,12 @@ export const WEEKDAYS = [
 export function endsIn(endMs: number, nowMs: number): string | null {
   if (!Number.isFinite(endMs)) return null;
   const hours = Math.max(0, Math.round((endMs - nowMs) / HOUR_MS));
+  if (isSpanish()) {
+    if (hours < 1) return "termina en menos de una hora";
+    if (hours < 24) return hours === 1 ? "termina en 1 hora" : `termina en ${hours} horas`;
+    const days = Math.round(hours / 24);
+    return days === 1 ? "termina mañana" : `termina en ${days} días`;
+  }
   if (hours < 1) return "ends within the hour";
   if (hours < 24) return `ends in ${hours} hour${hours === 1 ? "" : "s"}`;
   const days = Math.round(hours / 24);
@@ -52,6 +59,14 @@ export function endsIn(endMs: number, nowMs: number): string | null {
 export function timeLeft(endMs: number, nowMs: number): string | null {
   if (!Number.isFinite(endMs)) return null;
   const minutes = Math.max(0, Math.round((endMs - nowMs) / 60_000));
+  if (isSpanish()) {
+    if (minutes < 1) return "menos de un minuto";
+    if (minutes < 60) return minutes === 1 ? "1 minuto" : `${minutes} minutos`;
+    const hours = Math.round(minutes / 60);
+    if (hours < 24) return hours === 1 ? "1 hora" : `${hours} horas`;
+    const days = Math.round(hours / 24);
+    return days === 1 ? "1 día" : `${days} días`;
+  }
   if (minutes < 1) return "under a minute";
   if (minutes < 60) return `${minutes} minute${minutes === 1 ? "" : "s"}`;
   const hours = Math.round(minutes / 60);
@@ -61,19 +76,24 @@ export function timeLeft(endMs: number, nowMs: number): string | null {
 }
 
 export function cycleLabel(cycle: MeterCycle): string {
+  const es = isSpanish();
   switch (cycle.kind) {
     case "daily":
-      return "Daily";
+      return es ? "Diario" : "Daily";
     case "weekly":
-      return "Weekly";
+      return es ? "Semanal" : "Weekly";
     case "monthly":
-      return "Monthly";
+      return es ? "Mensual" : "Monthly";
     case "custom":
-      return `Every ${cycle.days} days`;
+      return es ? `Cada ${cycle.days} días` : `Every ${cycle.days} days`;
     case "billing":
-      return "Starlink billing";
+      return es ? "Facturación de Starlink" : "Starlink billing";
     case "once":
-      return "One-off";
+      return es ? "Una vez" : "One-off";
+    default: {
+      const unreachable: never = cycle;
+      return unreachable;
+    }
   }
 }
 
@@ -84,8 +104,9 @@ export function gigabytes(bytes: number): string {
 
 export function ringReading(bytes: number): { value: string; unit: string } {
   const megabytes = Math.round(bytes / 1e6);
-  if (megabytes < 1000) return { value: String(megabytes), unit: "MB USED" };
-  return { value: gigabytes(bytes), unit: "GB USED" };
+  if (megabytes < 1000)
+    return { value: String(megabytes), unit: isSpanish() ? "MB USADOS" : "MB USED" };
+  return { value: gigabytes(bytes), unit: isSpanish() ? "GB USADOS" : "GB USED" };
 }
 
 export const CEILING_RUNGS_GB = [10, 25, 50, 100, 250, 500, 1000];
@@ -126,7 +147,7 @@ export function stepFor(ceiling: number): number {
 
 /** The clock time a countdown running from now would reach. */
 export function endsAtLabel(remainingMs: number, nowMs: number): string {
-  return new Date(nowMs + remainingMs).toLocaleTimeString(undefined, {
+  return new Date(nowMs + remainingMs).toLocaleTimeString(intlTag(), {
     hour: "numeric",
     minute: "2-digit",
   });
@@ -273,7 +294,17 @@ export type RuleMode = "limit" | "timer" | "schedule";
 
 /** What auto-pause does as it is currently set. */
 export function autoPauseDetail(on: boolean, mode: RuleMode, several: boolean): string {
-  if (!on) return "Watches and announces, but never cuts anything off.";
+  if (!on) {
+    return isSpanish()
+      ? "Observa y avisa, pero nunca corta nada."
+      : "Watches and announces, but never cuts anything off.";
+  }
+  if (isSpanish()) {
+    const whose = several ? "su internet" : "el internet de este dispositivo";
+    if (mode === "timer") return `Corta ${whose} cuando se acaba el tiempo.`;
+    if (mode === "schedule") return `Corta ${whose} fuera del horario de abajo.`;
+    return `Corta ${whose} hasta que termine el ciclo.`;
+  }
   const whose = several ? "their internet" : "this device’s internet";
   if (mode === "timer") return `Cuts ${whose} when the time is up.`;
   if (mode === "schedule") return `Cuts ${whose} outside the hours set below.`;

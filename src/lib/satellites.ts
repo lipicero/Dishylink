@@ -6,6 +6,7 @@
 // everything actually above the horizon.
 
 import * as satelliteJs from "satellite.js";
+import { starlinkGeneration, type StarlinkGeneration } from "./starlinkGeneration";
 
 // CelesTrak sends no CORS headers, so the dev server and desktop app fetch it
 // through a same-origin proxy prefix. A host that reaches it directly — the
@@ -80,6 +81,8 @@ export interface SatelliteSky {
   topocentric?: TopocentricState;
   /** Date.now() when this sample was propagated, for advanceLookAngles. */
   sampledAtMs?: number;
+  /** Hardware block, from the launch in the TLE. Absent when that launch is unknown. */
+  generation?: StarlinkGeneration;
 }
 
 /** Earth's rotation rate, for the velocity transport term. */
@@ -125,6 +128,7 @@ interface TleRecord {
   name: string;
   line1: string;
   line2: string;
+  generation: StarlinkGeneration | null;
 }
 
 /**
@@ -203,7 +207,7 @@ export async function loadStarlinkTles(): Promise<TleRecord[]> {
     const line1 = lines[lineIndex + 1];
     const line2 = lines[lineIndex + 2];
     if (name && line1?.startsWith("1 ") && line2?.startsWith("2 ")) {
-      tleRecords.push({ name, line1, line2 });
+      tleRecords.push({ name, line1, line2, generation: starlinkGeneration(line1) });
     }
   }
   return tleRecords;
@@ -212,7 +216,11 @@ export async function loadStarlinkTles(): Promise<TleRecord[]> {
 const FORECAST_OFFSETS_MINUTES = [5, 10, 15, 20, 25, 30];
 
 export class StarlinkTracker {
-  private readonly satellites: Array<{ name: string; satrec: satelliteJs.SatRec }>;
+  private readonly satellites: Array<{
+    name: string;
+    generation: StarlinkGeneration | null;
+    satrec: satelliteJs.SatRec;
+  }>;
   private readonly observerGd: satelliteJs.GeodeticLocation;
   /** Local east/north/up axes at the observer, as ECEF vectors. */
   private readonly east: Vec3;
@@ -226,7 +234,11 @@ export class StarlinkTracker {
 
   constructor(tleRecords: TleRecord[], observer: ObserverLocation) {
     this.satellites = tleRecords
-      .map((tle) => ({ name: tle.name, satrec: satelliteJs.twoline2satrec(tle.line1, tle.line2) }))
+      .map((tle) => ({
+        name: tle.name,
+        generation: tle.generation,
+        satrec: satelliteJs.twoline2satrec(tle.line1, tle.line2),
+      }))
       .filter((entry) => entry.satrec.error === 0);
     this.observerGd = {
       latitude: satelliteJs.degreesToRadians(observer.latitudeDeg),
@@ -406,6 +418,7 @@ export class StarlinkTracker {
       const sky = this.lookAngles(entry.satrec, atDate, gmst, true);
       if (sky && sky.elevationDeg > FINE_ELEVATION_FLOOR_DEG) {
         sky.name = entry.name;
+        if (entry.generation) sky.generation = entry.generation;
         sky.sampledAtMs = nowMs;
         inView.push(sky);
       }

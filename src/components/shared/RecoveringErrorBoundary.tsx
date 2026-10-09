@@ -5,6 +5,7 @@
 // that keeps recurring shows the user anything: a plain notice with a reload.
 
 import { Component, Fragment, type ErrorInfo, type ReactNode } from "react";
+import { t } from "../../i18n/translate";
 
 /** Silent remount attempts before giving up and showing the notice. */
 const RETRY_BUDGET = 3;
@@ -61,14 +62,14 @@ export class RecoveringErrorBoundary extends Component<Props, State> {
       return (
         <div className='flex min-h-screen flex-col items-center justify-center gap-3 p-8 text-center'>
           <p className='text-[15px] text-ink-secondary'>
-            The dashboard hit a display error and couldn’t recover on its own.
+            {t("The dashboard hit a display error and couldn’t recover on its own.")}
           </p>
           <button
             type='button'
             onClick={() => window.location.reload()}
             className='cursor-pointer rounded-full bg-[color-mix(in_srgb,var(--ink)_10%,var(--surface))] px-4 py-2 text-[14px] text-ink hover:bg-[color-mix(in_srgb,var(--ink)_16%,var(--surface))]'
           >
-            Reload
+            {t("Reload")}
           </button>
         </div>
       );

@@ -15,9 +15,11 @@ import { DishIcon } from "../../assets/icons/DishIcon";
 import { RouterIcon } from "../../assets/icons/RouterIcon";
 import { Field, StatusDot } from "./accountChrome";
 import { buildDeviceList, type DeviceItem } from "./deviceList";
+import { t } from "../../i18n/translate";
+import { intlTag } from "../../lib/locale";
 
 function lastUpdated(tel: DeviceTelemetry | undefined): string {
-  return tel ? new Date(tel.timestampMs).toLocaleString() : "—";
+  return tel ? new Date(tel.timestampMs).toLocaleString(intlTag()) : "—";
 }
 
 /** Dish or router glyph, dimmed when the device isn't online. */
@@ -34,12 +36,12 @@ function DeviceIcon({ item }: { item: DeviceItem }) {
  *  the panel is built per kind rather than merged into one optional-heavy list. */
 function fieldsFor(item: DeviceItem): { label: string; value: ReactNode; mono?: boolean }[] {
   if (item.kind === "dish") {
-    const t = item.terminal!;
+    const terminal = item.terminal!;
     const tel = item.tel as DishTelemetry | undefined;
     return [
-      { label: "Starlink ID", value: t.userTerminalId ?? "—", mono: true },
-      { label: "Serial number", value: t.dishSerialNumber ?? "—", mono: true },
-      { label: "Kit number", value: t.serialNumber ?? "—", mono: true },
+      { label: "Starlink ID", value: terminal.userTerminalId ?? "—", mono: true },
+      { label: "Serial number", value: terminal.dishSerialNumber ?? "—", mono: true },
+      { label: "Kit number", value: terminal.serialNumber ?? "—", mono: true },
       { label: "Software version", value: tel?.softwareVersion ?? "—", mono: true },
       { label: "Uptime", value: formatUptime(tel?.uptimeS) },
       { label: "Last updated", value: lastUpdated(tel) },
@@ -49,7 +51,9 @@ function fieldsFor(item: DeviceItem): { label: string; value: ReactNode; mono?: 
       },
       {
         label: "Last connected",
-        value: t.lastConnected ? new Date(t.lastConnected).toLocaleString() : "—",
+        value: terminal.lastConnected
+          ? new Date(terminal.lastConnected).toLocaleString(intlTag())
+          : "—",
       },
     ];
   }
@@ -62,7 +66,7 @@ function fieldsFor(item: DeviceItem): { label: string; value: ReactNode; mono?: 
     { label: "Clients", value: tel?.clients != null ? String(tel.clients) : "—" },
     { label: "Uptime", value: formatUptime(tel?.uptimeS) },
     { label: "Connection to Starlink", value: connectionLabel(tel?.hops) },
-    { label: "Bypassed", value: tel ? (tel.isBypassed ? "Yes" : "No") : "—" },
+    { label: "Bypassed", value: tel ? (tel.isBypassed ? t("Yes") : t("No")) : "—" },
     { label: "Last updated", value: lastUpdated(tel) },
   ];
 }
@@ -75,12 +79,12 @@ function DeviceDetail({ item }: { item: DeviceItem }) {
         <span className='text-[15px] font-semibold'>{item.name}</span>
         <span className='ml-auto flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground'>
           <StatusDot status={item.status} />
-          {item.status}
+          {t(item.status)}
         </span>
       </div>
       <div className='grid grid-cols-2 gap-4 max-[520px]:grid-cols-1'>
         {fieldsFor(item).map((field) => (
-          <Field key={field.label} label={field.label}>
+          <Field key={field.label} label={t(field.label)}>
             {field.mono ? <span className='mono-value break-all'>{field.value}</span> : field.value}
           </Field>
         ))}
@@ -106,7 +110,9 @@ export function DevicesSection({
   const selected = items.find((i) => i.key === selectedKey) ?? items[0];
 
   if (items.length === 0) {
-    return <div className='text-[13px] text-muted-foreground'>No devices on this account.</div>;
+    return (
+      <div className='text-[13px] text-muted-foreground'>{t("No devices on this account.")}</div>
+    );
   }
   const firstInactiveKey = items.find((i) => i.groupInactive)?.key;
 
@@ -117,7 +123,7 @@ export function DevicesSection({
           <li key={item.key}>
             {item.key === firstInactiveKey && (
               <div className='mt-2 mb-1 px-2.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground'>
-                Inactive
+                {t("Inactive")}
               </div>
             )}
             <button

@@ -7,6 +7,7 @@
 // Their needle orange is #ffac30. Size ratios are verbatim from their code.
 
 import { type AlignmentReading } from "./alignmentMath";
+import { t } from "../../i18n/translate";
 import {
   CompassLabels,
   DialDots,
@@ -79,7 +80,7 @@ export function RotationInstrument({ reading }: { reading: AlignmentReading }) {
   }
 
   return (
-    <InstrumentFrame label='Rotation' berry={berryFor(reading.isAligned, reading.isValid)}>
+    <InstrumentFrame label={t("Rotation")} berry={berryFor(reading.isAligned, reading.isValid)}>
       <DialDots cx={center} cy={center} radius={ringRadius} anglesDeg={ringDots} />
       <CompassLabels cx={center} cy={center} radius={ringRadius} fontSize={SIZE / 20} />
       {/* wedge: desired azimuth ± tolerance (their thetaCenter = desired − 90) */}
@@ -117,7 +118,7 @@ export function TiltInstrument({ reading }: { reading: AlignmentReading }) {
   for (let dotIndex = 0; dotIndex < 19; dotIndex++) arcDots.push(dotIndex * 5);
 
   return (
-    <InstrumentFrame label='Tilt' berry={berryFor(reading.isElevationValid, reading.isValid)}>
+    <InstrumentFrame label={t("Tilt")} berry={berryFor(reading.isElevationValid, reading.isValid)}>
       {/* their y-up coordinate system: translate(0, size) scale(1, -1) */}
       <g transform={`translate(0, ${SIZE}) scale(1, -1)`}>
         <DialDots cx={pivot} cy={pivot} radius={arcRadius} anglesDeg={arcDots} />

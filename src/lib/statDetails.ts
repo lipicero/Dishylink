@@ -7,6 +7,7 @@ import type { StatDetail } from "../components/dashboard/StatDetailPanel";
 import { readRouterLatencyMs, type TelemetrySample, type OutageEvent } from "@core/telemetry";
 import type { DishStatusJson } from "@core/dishClient";
 import { formatThroughput, formatThroughputLabel, formatThroughputTick } from "./format";
+import { t } from "../i18n/translate";
 
 export const THROUGHPUT_SERIES: ChartSeries[] = [
   {
@@ -150,17 +151,17 @@ export function coverageNote(slice: TelemetrySample[], windowMinutes: number): s
   // No readings in the window at all — the dish has been silent for longer than
   // the window is wide. Distinct from a thin window, which is a real if short
   // measurement and reports the minutes it has.
-  if (slice.length === 0) return "nothing recorded in this window";
+  if (slice.length === 0) return t("nothing recorded in this window");
   let coveredMs = 0;
   for (let index = 1; index < slice.length; index++) {
     const step = slice[index].timestampMs - slice[index - 1].timestampMs;
     if (step <= COVERAGE_GAP_MS) coveredMs += step;
   }
   const windowMs = windowMinutes * 60_000;
-  if (coveredMs >= windowMs * 0.95) return "over the selected window";
+  if (coveredMs >= windowMs * 0.95) return t("over the selected window");
   const coveredMinutes = coveredMs / 60_000;
   const rounded = coveredMinutes >= 1 ? `${Math.round(coveredMinutes)} min` : "< 1 min";
-  return `recorded ${rounded} of this window`;
+  return t("recorded {span} of this window", { span: rounded });
 }
 
 export interface StatDetailInputs {

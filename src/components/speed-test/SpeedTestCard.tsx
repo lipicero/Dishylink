@@ -13,6 +13,7 @@ import { dishModelFor } from "../../lib/dishMesh";
 import { SpeedGauge } from "./SpeedGauge";
 import { SpeedBeam } from "./SpeedBeam";
 import { SegmentedControl } from "../ui/segmented-control";
+import { t } from "../../i18n/translate";
 
 type SpeedView = "gauge" | "beam";
 
@@ -164,33 +165,33 @@ export function SpeedTestPanel({
   // all to distinguish "it broke" from "you haven't pressed Go yet".
   const gauge =
     phase === "upload"
-      ? { value: progress.uploadMbps, mode: "upload" as const, caption: "Upload" }
+      ? { value: progress.uploadMbps, mode: "upload" as const, caption: t("Upload") }
       : phase === "download"
-        ? { value: progress.downloadMbps, mode: "download" as const, caption: "Download" }
+        ? { value: progress.downloadMbps, mode: "download" as const, caption: t("Download") }
         : phase === "done"
-          ? { value: progress.downloadMbps, mode: "download" as const, caption: "Download" }
+          ? { value: progress.downloadMbps, mode: "download" as const, caption: t("Download") }
           : // The rest between upload and the download reading: the needle drains to 0
             // under the download caption the reading returns in, so it settles up from
             // zero. Kept in download mode (not idle) so the beam stays lit through the
             // handoff, mirroring how the download→upload rest holds the upload look.
             phase === "resting"
-            ? { value: null, mode: "download" as const, caption: "Download" }
+            ? { value: null, mode: "download" as const, caption: t("Download") }
             : failed
-              ? { value: null, mode: "idle" as const, caption: "Failed" }
-              : { value: null, mode: "idle" as const, caption: "Ready" };
+              ? { value: null, mode: "idle" as const, caption: t("Failed") }
+              : { value: null, mode: "idle" as const, caption: t("Ready") };
 
   return (
     <div className='flex flex-col items-center gap-1'>
       <SegmentedControl
         variant='glider'
-        label='Speed test view'
+        label={t("Speed test view")}
         className='mb-3'
         disabled={isRunning}
         value={view}
         onChange={setView}
         options={[
           { value: "beam", label: "Starlink" },
-          { value: "gauge", label: "Gauge" },
+          { value: "gauge", label: t("Gauge") },
         ]}
       />
 
@@ -200,7 +201,7 @@ export function SpeedTestPanel({
             whole-millisecond pings, so a decimal there would be invented precision. */}
         <HeadlineFigure
           icon={<ArrowDownIcon size={12} strokeWidth={2.5} />}
-          label='DOWNLOAD'
+          label={t("DOWNLOAD")}
           unit='Mbps'
           digits={1}
           value={progress.downloadMbps}
@@ -208,7 +209,7 @@ export function SpeedTestPanel({
         />
         <HeadlineFigure
           icon={<ArrowUpIcon size={12} strokeWidth={2.5} />}
-          label='UPLOAD'
+          label={t("UPLOAD")}
           unit='Mbps'
           digits={1}
           value={progress.uploadMbps}
@@ -216,7 +217,7 @@ export function SpeedTestPanel({
         />
         <HeadlineFigure
           icon={<ClockIcon size={12} strokeWidth={2.5} />}
-          label='LATENCY'
+          label={t("LATENCY")}
           unit='ms'
           digits={0}
           value={quality.latencyMs}
@@ -226,8 +227,8 @@ export function SpeedTestPanel({
 
       <div className='flex w-full justify-center gap-[18px] border-t border-b border-border py-2'>
         {/* a decimal place: real Starlink jitter is often sub-1ms and would round to a bare 0 */}
-        <MetricPill label='Jitter' value={fmt(quality.jitterMs, 1)} unit='ms' />
-        <MetricPill label='Loss' value={fmt(quality.lossPct, 1)} unit='%' />
+        <MetricPill label={t("Jitter")} value={fmt(quality.jitterMs, 1)} unit='ms' />
+        <MetricPill label={t("Loss")} value={fmt(quality.lossPct, 1)} unit='%' />
       </div>
 
       {view === "beam" ? (
@@ -268,18 +269,18 @@ export function SpeedTestPanel({
             className='animate-[speedtest-spin_1s_steps(12,end)_infinite]'
             size={20}
             strokeWidth={2.5}
-            aria-label='Running speed test'
+            aria-label={t("Running speed test")}
           />
         ) : phase === "done" ? (
           <>
-            <RotateCcwIcon size={15} strokeWidth={2.5} /> Run again
+            <RotateCcwIcon size={15} strokeWidth={2.5} /> {t("Run again")}
           </>
         ) : failed ? (
           <>
-            <RotateCcwIcon size={15} strokeWidth={2.5} /> Try again
+            <RotateCcwIcon size={15} strokeWidth={2.5} /> {t("Try again")}
           </>
         ) : (
-          "Go"
+          t("Go")
         )}
       </button>
       {/* A failure has to look like one. This line is the only place the panel
@@ -290,10 +291,10 @@ export function SpeedTestPanel({
         className={`mt-2.5 text-center text-[11.5px] font-medium ${failed ? "text-destructive" : "text-muted-foreground"}`}
         role={failed ? "alert" : undefined}
       >
-        {PHASE_LABEL[phase]}
+        {t(PHASE_LABEL[phase])}
       </div>
       <div className='mt-1 text-center text-[10.5px] font-medium text-muted-foreground opacity-70'>
-        Measured against Cloudflare · may read lower than tests to a nearby server
+        {t("Measured against Cloudflare · may read lower than tests to a nearby server")}
       </div>
     </div>
   );

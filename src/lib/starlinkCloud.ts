@@ -11,6 +11,7 @@
 
 import type { WifiClientJson, WifiNetworkConfigJson } from "@core/dishClient";
 import { cloudRequest, noteCloudSessionChanged } from "./cloudHost";
+import { t } from "../i18n/translate";
 
 // ---- response shapes (only the fields the UI reads) ----
 
@@ -171,7 +172,7 @@ export function routerStatus(
 export function dishDisplayName(terminal: CloudTerminal): string {
   const tail = (terminal.userTerminalId ?? "").split("-").pop() ?? "";
   const hex = tail.slice(-6).toUpperCase();
-  return hex ? `STARLINK ${hex}` : (terminal.serialNumber ?? "Starlink dish");
+  return hex ? `STARLINK ${hex}` : (terminal.serialNumber ?? t("Starlink dish"));
 }
 
 /** Friendly router name: the controller reads "Main Router", a repeater "MESH". */
@@ -181,22 +182,24 @@ export function routerDisplayName(
 ): string {
   const hex = (routerId ?? "").slice(-12).replace(/^0+/, "").toUpperCase();
   const isMesh = tel?.isRepeater === true || (tel?.hops ?? 0) > 0;
-  const prefix = tel ? (isMesh ? "MESH" : "Main Router") : "Router";
+  const prefix = tel ? (isMesh ? "MESH" : t("Main Router")) : t("Router");
   return hex ? `${prefix} ${hex}` : prefix;
 }
 
 /** "v3" → "Starlink Router 3", "v2" → "Starlink Router (Gen 2)". */
 export function routerHardwareName(hw: string | undefined): string {
-  if (hw === "v3") return "Starlink Router 3";
-  if (hw === "v2") return "Starlink Router (Gen 2)";
-  if (hw === "v1") return "Starlink Router (Gen 1)";
-  return hw ? `Starlink Router (${hw})` : "—";
+  if (hw === "v3") return t("Starlink Router 3");
+  if (hw === "v2") return t("Starlink Router (Gen 2)");
+  if (hw === "v1") return t("Starlink Router (Gen 1)");
+  return hw ? t("Starlink Router ({hw})", { hw }) : "—";
 }
 
 /** Hops → "Direct" / "Mesh (N hops)", the portal's "Connection to Starlink". */
 export function connectionLabel(hops: number | undefined): string {
-  if (!hops) return "Direct";
-  return `Mesh (${hops} hop${hops === 1 ? "" : "s"})`;
+  if (!hops) return t("Direct");
+  return hops === 1
+    ? t("Mesh ({count} hop)", { count: hops })
+    : t("Mesh ({count} hops)", { count: hops });
 }
 
 /** Seconds → "11h 27m" / "4m 31s" / "88s". */
@@ -305,7 +308,7 @@ export async function connectCloud(cookie: string): Promise<void> {
   });
   if (status < 200 || status >= 300) {
     const { message } = (body ?? {}) as { message?: string };
-    throw new Error(message ?? `Couldn’t connect (HTTP ${status}).`);
+    throw new Error(message ? t(message) : t("Couldn't connect (HTTP {status}).", { status }));
   }
   noteCloudSessionChanged();
 }

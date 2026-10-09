@@ -9,6 +9,7 @@
 // per-device throughput, but the roster is the roster.
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "../i18n/translate";
 import {
   DishClient,
   type WifiClientJson,
@@ -519,10 +520,10 @@ export function useRouterNetwork(active: boolean): RouterNetwork {
         // sign-in can fix. Connecting one bumps `cloudSession` and re-runs this.
         if (error instanceof CloudNotConnectedError) {
           window.clearInterval(timerId);
-          setAccountRosterError("Connect your Starlink account first.");
+          setAccountRosterError(t("Connect your Starlink account first."));
         } else {
           setAccountRosterError(
-            "Couldn't reach your Starlink account. Check this device's internet connection.",
+            t("Couldn't reach your Starlink account. Check this device's internet connection."),
           );
         }
       } finally {

@@ -1,4 +1,5 @@
 import { cloudRequest, type CloudRequest, type CloudReply } from "./cloudHost";
+import { t } from "../i18n/translate";
 import type { RouterClientUpdate } from "@core/routerClientUpdate";
 
 /** "Not this device" and "could not tell which device you are" both arrive as
@@ -38,11 +39,11 @@ export async function applyRouterClientUpdate(
   const reply = await request({ path: "/cloud/device", method: "POST", body: update });
   if (reply.status === 200) return;
   const message = (reply.body as { message?: string })?.message ?? `HTTP ${reply.status}`;
-  if (reply.status === 428) throw new AccountRequiredError(message);
+  if (reply.status === 428) throw new AccountRequiredError(t(message));
   // 409 is a host refusing before anything left this machine, so its own message
   // is the whole answer.
-  if (reply.status === 409) throw new Error(message);
-  throw new Error(`Starlink rejected the device update: ${message}`);
+  if (reply.status === 409) throw new Error(t(message));
+  throw new Error(t("Starlink rejected the device update: {detail}", { detail: t(message) }));
 }
 
 export async function setRouterClientPaused(clientId: number, paused: boolean): Promise<void> {

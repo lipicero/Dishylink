@@ -2,6 +2,7 @@
 // with, whether or not that node is currently up.
 
 import type { WifiClientJson, WifiNetworkConfigJson } from "@core/dishClient";
+import { t } from "../../i18n/translate";
 
 /** One row of the Nodes tab: the router itself plus every mesh node it has been
  *  paired with, connected or not. */
@@ -22,11 +23,11 @@ export interface NodeEntry {
  *  node prefers the name saved in its config over anything the client entry
  *  carries. */
 function nodeName(client: WifiClientJson, wifiConfig: WifiNetworkConfigJson | null): string {
-  if (client.role === "CONTROLLER") return "Main Router";
+  if (client.role === "CONTROLLER") return t("Main Router");
   const configured = client.deviceId
     ? wifiConfig?.meshConfigs?.[client.deviceId]?.displayName
     : undefined;
-  return configured || client.givenName || client.name || "Mesh node";
+  return configured || client.givenName || client.name || t("Mesh node");
 }
 
 /**
@@ -45,7 +46,8 @@ export function buildNodeRoster(
   const nodes: NodeEntry[] = infrastructure.map((client, index) => ({
     key: client.deviceId ?? client.macAddress ?? `node-${index}`,
     name: nodeName(client, wifiConfig),
-    status: client.role === "CONTROLLER" ? "Connected to Starlink" : "Connected",
+    status:
+      client.role === "CONTROLLER" ? t("Connected to Starlink") : t("Connected", undefined, "node"),
     connected: true,
     client,
     devices: clients.filter(
@@ -57,8 +59,8 @@ export function buildNodeRoster(
     if (liveDeviceIds.has(deviceId)) continue;
     nodes.push({
       key: deviceId,
-      name: meshNode.displayName || "Mesh node",
-      status: "Disconnected",
+      name: meshNode.displayName || t("Mesh node"),
+      status: t("Disconnected"),
       connected: false,
       // A node that is down reports no clients — they have roamed elsewhere.
       devices: [],

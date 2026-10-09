@@ -2,11 +2,15 @@
 // outage bands, crosshair + tooltip. Samples are bucketed per pixel.
 
 import { useMemo, useRef, useState, useEffect, useCallback, useId } from "react";
-import { outageEventKind, type TelemetrySample, type OutageEvent } from "@core/telemetry";
+import { explainOutageBand, isChartOutage, placeOutageLabels } from "@core/outageBand";
+import type { TelemetrySample, OutageEvent } from "@core/telemetry";
+import { bucketSamples, type ChartBucket } from "../../lib/chartBuckets";
 import { formatClockTime } from "../../lib/format";
+import { t } from "../../i18n/translate";
 import {
   Crosshair,
   NoDataBands,
+  OutageBandLabels,
   OutageBands,
   PlotBaseline,
   PlotGrid,
@@ -56,12 +60,7 @@ interface TelemetryChartProps {
   windowEndMs?: number;
 }
 
-interface BucketPoint {
-  timestampMs: number;
-  values: (number | null)[];
-  /** No samples at all between the previous bucket and this one. */
-  hasGapBefore: boolean;
-}
+type BucketPoint = ChartBucket;
 
 const PLOT_MARGIN = { top: 8, right: 12, bottom: 22, left: 46 };
 
@@ -161,57 +160,10 @@ export function TelemetryChart({
   const windowEndMs = windowEndOverrideMs ?? tickingNowMs;
   const windowStartMs = windowEndMs - windowMinutes * 60_000;
 
-  const { buckets, bucketSpanMs } = useMemo<{
-    buckets: BucketPoint[];
-    bucketSpanMs: number;
-  }>(() => {
-    // Half-open [start, end): with a frozen end, samples past the boundary would
-    // otherwise clamp into the last bucket and creep its mean every second,
-    // defeating the freeze. On the live clock nothing is newer than now, so this
-    // excludes only a sample landing exactly on it — no effect on those charts.
-    const visibleSamples = samples.filter(
-      (sample) => sample.timestampMs >= windowStartMs && sample.timestampMs < windowEndMs,
-    );
-    if (visibleSamples.length === 0) return { buckets: [], bucketSpanMs: 0 };
-    const bucketCount = Math.min(Math.max(Math.floor(plotWidth / 2), 30), visibleSamples.length);
-    const bucketSpanMs = (windowEndMs - windowStartMs) / bucketCount;
-    const grouped: TelemetrySample[][] = Array.from({ length: bucketCount }, () => []);
-    for (const sample of visibleSamples) {
-      const bucketIndex = Math.min(
-        Math.floor((sample.timestampMs - windowStartMs) / bucketSpanMs),
-        bucketCount - 1,
-      );
-      grouped[bucketIndex].push(sample);
-    }
-    const populated = grouped
-      .map((bucketSamples, bucketIndex) => {
-        if (bucketSamples.length === 0) return null;
-        return {
-          timestampMs: windowStartMs + (bucketIndex + 0.5) * bucketSpanMs,
-          values: series.map((chartSeries) => {
-            const seriesValues = bucketSamples
-              .map(chartSeries.getValue)
-              .filter((value): value is number => value !== null && Number.isFinite(value));
-            if (seriesValues.length === 0) return null;
-            if (chartSeries.bucketReduce === "max") return Math.max(...seriesValues);
-            if (chartSeries.bucketReduce === "min") return Math.min(...seriesValues);
-            return seriesValues.reduce((sum, value) => sum + value, 0) / seriesValues.length;
-          }),
-          hasGapBefore: false,
-        };
-      })
-      .filter((bucket): bucket is BucketPoint => bucket !== null);
-
-    // Empty buckets are dropped above, so a hole shows up as two neighbours
-    // further apart than one bucket. Anything wider than that — and wider than
-    // a dropped sample or two — is time we never measured.
-    const gapThresholdMs = Math.max(bucketSpanMs * 1.5, minGapMs);
-    for (let index = 1; index < populated.length; index++) {
-      populated[index].hasGapBefore =
-        populated[index].timestampMs - populated[index - 1].timestampMs > gapThresholdMs;
-    }
-    return { buckets: populated, bucketSpanMs };
-  }, [samples, series, windowStartMs, windowEndMs, plotWidth, minGapMs]);
+  const { buckets, bucketSpanMs } = useMemo(
+    () => bucketSamples(samples, series, windowStartMs, windowEndMs, plotWidth, minGapMs),
+    [samples, series, windowStartMs, windowEndMs, plotWidth, minGapMs],
+  );
 
   // Ceiling and gridlines come out of ONE derivation: the ceiling is a whole
   // number of tick steps, so the top gridline is always the ceiling. Choosing
@@ -338,10 +290,31 @@ export function TelemetryChart({
   // 2px, so a zero-length outage would paint a red hairline over nothing.
   const visibleOutages = outageEvents.filter(
     (outage) =>
-      outageEventKind(outage.cause) === "outage" &&
+      isChartOutage(outage.cause) &&
       outage.durationMs > 0 &&
       outage.startMs + outage.durationMs > windowStartMs &&
       outage.startMs < windowEndMs,
+  );
+  const explainedBands = placeOutageLabels(
+    visibleOutages.map((outage) => {
+      const bandStartX = Math.max(xForTime(outage.startMs), leftEdgeX);
+      const bandEndX = Math.min(
+        xForTime(outage.startMs + outage.durationMs),
+        leftEdgeX + plotWidth,
+      );
+      const endMs = outage.startMs + outage.durationMs;
+      return {
+        key: `${outage.startMs}-${outage.cause}`,
+        x: bandStartX,
+        width: Math.max(bandEndX - bandStartX, 2),
+        label: t(explainOutageBand(outage, outageEvents)),
+        durationMs: outage.durationMs,
+        // Still open against this window: the cut someone is looking at now.
+        ongoing: endMs >= windowEndMs - 1_000,
+      };
+    }),
+    leftEdgeX,
+    plotWidth,
   );
 
   // How far the crosshair may reach for a reading. Inside a hole the nearest
@@ -374,6 +347,21 @@ export function TelemetryChart({
   const hoveredBucket = hoverIndex !== null ? buckets[hoverIndex] : null;
   const tooltipOnLeft =
     hoveredBucket !== null && xForTime(hoveredBucket.timestampMs) > containerWidth * 0.62;
+  // The bucket is a slice of the window, so a hairline cut inside it still
+  // names itself when the cursor is on that slice.
+  const hoveredReasons = hoveredBucket
+    ? [
+        ...new Set(
+          visibleOutages.flatMap((outage) => {
+            const outageEnd = outage.startMs + outage.durationMs;
+            const sliceStart = hoveredBucket.timestampMs - bucketSpanMs / 2;
+            const sliceEnd = hoveredBucket.timestampMs + bucketSpanMs / 2;
+            if (outageEnd < sliceStart || outage.startMs > sliceEnd) return [];
+            return [t(explainOutageBand(outage, outageEvents))];
+          }),
+        ),
+      ]
+    : [];
 
   return (
     <div className='relative' ref={containerRef}>
@@ -402,17 +390,7 @@ export function TelemetryChart({
             x: xForTime(tickTime),
           }))}
         />
-        <OutageBands
-          frame={plotFrame}
-          bands={visibleOutages.map((outage, outageIndex) => {
-            const bandStartX = Math.max(xForTime(outage.startMs), leftEdgeX);
-            const bandEndX = Math.min(
-              xForTime(outage.startMs + outage.durationMs),
-              leftEdgeX + plotWidth,
-            );
-            return { key: outageIndex, x: bandStartX, width: Math.max(bandEndX - bandStartX, 2) };
-          })}
-        />
+        <OutageBands frame={plotFrame} bands={explainedBands} />
         <NoDataBands
           frame={plotFrame}
           bands={gapRegions.flatMap((region) => {
@@ -430,6 +408,7 @@ export function TelemetryChart({
             colorVar={series[seriesIndex].colorVar}
           />
         ))}
+        <OutageBandLabels frame={plotFrame} bands={explainedBands} />
         {hoveredBucket && (
           <Crosshair
             frame={plotFrame}
@@ -463,6 +442,11 @@ export function TelemetryChart({
           <div className='mb-[5px] text-[10px] tracking-[0.05em] text-muted-foreground'>
             {formatClockTime(hoveredBucket.timestampMs)}
           </div>
+          {hoveredReasons.length > 0 && (
+            <div className='mb-[5px] font-semibold text-status-critical'>
+              {hoveredReasons.join(" · ")}
+            </div>
+          )}
           {series.map((chartSeries, seriesIndex) => (
             <div
               className='flex items-center justify-between gap-[7px] leading-[1.7]'
@@ -473,7 +457,7 @@ export function TelemetryChart({
                   className='size-[9px] flex-none rounded-full'
                   style={{ background: `var(${chartSeries.colorVar})` }}
                 />
-                {chartSeries.label}
+                {t(chartSeries.label)}
               </span>
               <span className='font-mono tabular-nums'>
                 {hoveredBucket.values[seriesIndex] === null

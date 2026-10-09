@@ -1,4 +1,5 @@
 import { cloudRequest, type CloudRequest, type CloudReply } from "./cloudHost";
+import { t } from "../i18n/translate";
 import { AccountRequiredError } from "./routerClientUpdate";
 import type { RouterConfigUpdate } from "@core/routerConfigUpdate";
 
@@ -23,16 +24,17 @@ export async function applyRouterConfigUpdate(
   const reply = await request({ path: "/cloud/router-config", method: "POST", body: update });
   if (reply.status === 200) return;
   const message = (reply.body as { message?: string })?.message ?? `HTTP ${reply.status}`;
-  if (reply.status === 428) throw new AccountRequiredError(message);
+  if (reply.status === 428) throw new AccountRequiredError(t(message));
   // Only the far end can refuse, and on a timeout it never spoke. The body
   // already words that case, so it stands on its own.
-  if (reply.status === 504) throw new Error(message);
+  if (reply.status === 504) throw new Error(t(message));
   if ((reply.body as { deviceUnreachable?: boolean })?.deviceUnreachable)
     throw new DeviceUnreachableError(
-      "Starlink can't reach your router right now, so it couldn't pass the change on. " +
-        "This clears on its own, usually within 4 to 5 minutes. Try again then.",
+      t(
+        "Starlink can't reach your router right now, so it couldn't pass the change on. This clears on its own, usually within 4 to 5 minutes. Try again then.",
+      ),
     );
-  throw new Error(`Starlink couldn't apply the change: ${message}`);
+  throw new Error(t("Starlink couldn't apply the change: {detail}", { detail: t(message) }));
 }
 
 export async function setMeshNodeName(deviceId: string, displayName: string): Promise<void> {

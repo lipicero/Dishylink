@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { motion, useMotionValue, useSpring, useTransform, type MotionValue } from "motion/react";
 import { cn } from "@/lib/utils";
+import { t } from "../../i18n/translate";
 import type { ToolbarItem, ToolbarItemId } from "./AppToolbar";
 
 interface ToolbarDockProps {
@@ -111,7 +112,7 @@ export function ToolbarDock({ items, activeId, onSelect }: ToolbarDockProps) {
   return (
     <div className='fixed bottom-[25px] left-1/2 z-30 -translate-x-1/2'>
       <motion.nav
-        aria-label='Dashboard sections'
+        aria-label={t("Dashboard sections")}
         initial={{ opacity: 0, y: 26 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: 26 }}

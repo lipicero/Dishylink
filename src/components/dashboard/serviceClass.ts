@@ -1,3 +1,5 @@
+import { t } from "../../i18n/translate";
+
 /** Plan tier, in the vocabulary the Starlink app uses. CONSUMER covers both
  *  "Residential" on a fixed install and "Roam" on a kit licensed to move, so the
  *  mobility class is what tells those two apart. Absent mobility means
@@ -5,11 +7,11 @@
 export function formatServiceClass(classOfService?: string, mobilityClass?: string): string {
   switch (classOfService) {
     case "CONSUMER":
-      return mobilityClass === "NOMADIC" || mobilityClass === "MOBILE" ? "roam" : "residential";
+      return t(mobilityClass === "NOMADIC" || mobilityClass === "MOBILE" ? "roam" : "residential");
     case "BUSINESS":
-      return "business";
+      return t("business");
     case "BUSINESS_PLUS":
-      return "business plus";
+      return t("business plus");
     default:
       return (classOfService ?? "—").replaceAll("_", " ").toLowerCase();
   }

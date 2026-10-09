@@ -3,6 +3,7 @@
 // and is a different thing entirely.
 
 import { Wifi } from "lucide-react";
+import { t } from "../../../i18n/translate";
 import { countdownLeftMs } from "@core/dataMeter";
 import { scheduleActive } from "@core/schedule";
 import type { DataMeter } from "../../../hooks/useDataMeter";
@@ -184,7 +185,7 @@ export function MeterStatus({
             {paused && (
               <div className='flex items-center justify-center gap-2 pt-2 text-foreground/60'>
                 <Wifi className='size-4.5' strokeWidth={2} />
-                <span className='text-[15px] font-semibold tracking-wide'>PAUSED</span>
+                <span className='text-[15px] font-semibold tracking-wide'>{t("PAUSED")}</span>
               </div>
             )}
           </div>
@@ -195,7 +196,7 @@ export function MeterStatus({
               {paused ? (
                 <span className='flex flex-col items-center gap-2 text-foreground/60 [animation:paused-pulse_2.4s_ease-in-out_infinite]'>
                   <Wifi className='size-9' strokeWidth={2} />
-                  <span className='text-[17px] font-semibold tracking-wide'>PAUSED</span>
+                  <span className='text-[17px] font-semibold tracking-wide'>{t("PAUSED")}</span>
                 </span>
               ) : (
                 <>
@@ -256,7 +257,7 @@ export function MeterStatus({
               value={rule.windowEndMs ? (timeLeft(rule.windowEndMs, nowMs) ?? "—") : "—"}
             />
             <Stat
-              label='Right now'
+              label={t("Right now")}
               value={
                 scheduleDormant(rule, nowMs)
                   ? "Not scheduled"
@@ -294,7 +295,7 @@ export function MeterStatus({
         )}
 
         {leading === "schedule" && capped && (
-          <Section label='Data allowance'>
+          <Section label={t("Data allowance")}>
             <div className='flex items-baseline justify-between gap-3'>
               <span className='text-[15px] font-semibold tabular-nums text-foreground'>
                 {formatBytes(used)}

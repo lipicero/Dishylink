@@ -23,6 +23,7 @@ import {
 import { DetailsModal } from "../ui/details-modal";
 import { StatDetailPanel } from "./StatDetailPanel";
 import { formatThroughputLabel, formatThroughputTick } from "../../lib/format";
+import { t } from "../../i18n/translate";
 import { AppPrompts } from "../shared/AppPrompts";
 
 const CHART_TIME_RANGES: { label: string; minutes: number }[] = [
@@ -92,6 +93,12 @@ export function DashboardView({
 }: DashboardViewProps) {
   const [openDetailId, setOpenDetailId] = useState<string | null>(null);
   const latencyQuality = useLatencyHistory("1h", true);
+  // Thermal shutdowns live in their own log. Folded in here so a heat cut
+  // paints and names a red band the same way a sky or router cut does.
+  const chartOutages = useMemo(
+    () => [...outageEvents, ...thermalEvents],
+    [outageEvents, thermalEvents],
+  );
   const statDetails = useMemo(
     () =>
       buildStatDetails({
@@ -99,15 +106,15 @@ export function DashboardView({
         currentPowerW: livePowerW,
         powerWindowEndMs,
         recentPingSuccessPercent,
-        outageEvents,
+        outageEvents: chartOutages,
       }),
-    [status, livePowerW, powerWindowEndMs, recentPingSuccessPercent, outageEvents],
+    [status, livePowerW, powerWindowEndMs, recentPingSuccessPercent, chartOutages],
   );
 
   const openDetail = openDetailId ? statDetails[openDetailId] : null;
   const detailModal = openDetail && (
     <DetailsModal
-      title={openDetail.modalTitle ?? openDetail.label}
+      title={t(openDetail.modalTitle ?? openDetail.label)}
       onClose={() => setOpenDetailId(null)}
     >
       {openDetailId === "latency" ? (
@@ -134,36 +141,37 @@ export function DashboardView({
 
   const statTiles: StatTileConfig[] = [
     {
-      label: "Download",
+      label: t("Download"),
       value: liveDownlink.value,
       unit: liveDownlink.unit,
-      caption: "current traffic",
+      caption: t("current traffic"),
       sparkValues: sparklines.downlink,
       sparkColorVar: "--series-down",
       onOpenDetail: () => setOpenDetailId("download"),
     },
     {
-      label: "Upload",
+      label: t("Upload"),
       value: liveUplink.value,
       unit: liveUplink.unit,
-      caption: "current traffic",
+      caption: t("current traffic"),
       sparkValues: sparklines.uplink,
       sparkColorVar: "--series-up",
       onOpenDetail: () => setOpenDetailId("upload"),
     },
     {
-      label: "Latency",
+      label: t("Latency"),
       value: (liveLatencyMs ?? 0).toFixed(0),
       unit: "ms",
       caption:
         !latencyQuality.unavailable && latencyQuality.data ? (
           <span className='flex w-full items-center justify-between gap-2 whitespace-nowrap'>
             <span>
-              Quality:{" "}
+              {t("Quality:")}{" "}
               <span className='text-[13px] font-semibold text-foreground'>
                 {latencyQuality.data.score}
               </span>
-              , grade{" "}
+              {", "}
+              {t("grade")}{" "}
               <span
                 className='text-[10px]'
                 style={{ color: `var(${gradeColorVar(latencyQuality.data.grade)})` }}
@@ -177,38 +185,40 @@ export function DashboardView({
             <span className='flex-none max-[1300px]:hidden'>
               {latencyQuality.data.dish.p95 !== null
                 ? `${latencyQuality.data.dish.p95.toFixed(0)} ms p95`
-                : "no data"}
+                : t("no data")}
             </span>
           </span>
         ) : (
-          "pop ping, live"
+          t("pop ping, live")
         ),
       sparkValues: sparklines.latency,
       onOpenDetail: () => setOpenDetailId("latency"),
     },
     {
-      label: "Power draw",
+      label: t("Power draw"),
       value: livePowerW.toFixed(0),
       unit: "W",
-      caption: "current draw",
+      caption: t("current draw"),
       sparkValues: sparklines.power,
       onOpenDetail: () => setOpenDetailId("power"),
     },
     {
-      label: "Ping success",
+      label: t("Ping success"),
       value: recentPingSuccessPercent.toFixed(1),
       unit: "%",
-      caption: "last minute",
+      caption: t("last minute"),
       sparkValues: sparklines.pingSuccess,
       onOpenDetail: () => setOpenDetailId("pingSuccess"),
     },
     {
-      label: "Sky obstructed",
+      label: t("Sky obstructed"),
       value: ((status?.obstructionStats?.fractionObstructed ?? 0) * 100).toFixed(2),
       unit: "%",
       caption: status?.obstructionStats?.patchesValid
-        ? `${status.obstructionStats.patchesValid.toLocaleString()} patches mapped`
-        : "all-time view",
+        ? t("{count} patches mapped", {
+            count: status.obstructionStats.patchesValid.toLocaleString(undefined),
+          })
+        : t("all-time view"),
     },
   ];
 
@@ -226,14 +236,14 @@ export function DashboardView({
       <section className='grid grid-cols-12 gap-3.5 max-[1080px]:flex max-[1080px]:flex-col'>
         {/* Throughput chart */}
         <SectionCard
-          title='Throughput'
+          title={t("Throughput")}
           className='col-span-8'
           headerAction={
             <SegmentedControl
               options={CHART_TIME_RANGE_FILTER_OPTIONS}
               value={String(windowMinutes)}
               onChange={(minutes) => onWindowMinutesChange(Number(minutes))}
-              label='Chart time window'
+              label={t("Chart time window")}
             />
           }
         >
@@ -243,7 +253,7 @@ export function DashboardView({
             windowMinutes={windowMinutes}
             formatValue={formatThroughputLabel}
             formatTick={formatThroughputTick}
-            outageEvents={outageEvents}
+            outageEvents={chartOutages}
           />
           <div className='mt-2 flex items-center justify-center gap-3.5'>
             {THROUGHPUT_LEGEND.map((entry) => (
@@ -252,7 +262,7 @@ export function DashboardView({
                   className='size-[9px] flex-none rounded-full'
                   style={{ background: `var(${entry.colorVar})` }}
                 />{" "}
-                {entry.label}
+                {t(entry.label)}
               </span>
             ))}
           </div>
@@ -267,22 +277,28 @@ export function DashboardView({
         />
 
         {/* Latency chart */}
-        <SectionCard title='Latency' className='col-span-8' meta='pop ping · red bands = outages'>
+        <SectionCard
+          title={t("Latency")}
+          className='col-span-8'
+          meta={t("pop ping · the red band says why")}
+        >
           <TelemetryChart
             samples={chartSamples}
             series={LATENCY_SERIES}
             windowMinutes={windowMinutes}
             formatValue={(value) => `${value.toFixed(0)} ms`}
-            outageEvents={outageEvents}
+            outageEvents={chartOutages}
             height={160}
           />
         </SectionCard>
 
         {/* Power draw chart */}
         <SectionCard
-          title='Power draw'
+          title={t("Power draw")}
           className='col-span-8'
-          meta={`≈ ${((averagePowerW * 24) / 1000).toFixed(2)} kWh/day at recent draw`}
+          meta={t("≈ {kwh} kWh/day at recent draw", {
+            kwh: ((averagePowerW * 24) / 1000).toFixed(2),
+          })}
         >
           <TelemetryChart
             samples={powerChartSamples}
@@ -295,19 +311,19 @@ export function DashboardView({
         </SectionCard>
 
         {/* Outage log */}
-        <OutageLog outageEvents={[...outageEvents, ...thermalEvents]} />
+        <OutageLog outageEvents={chartOutages} />
 
         {/* Terminal card */}
         {status ? (
           <DishTerminalCard status={status} stale={stale} onExpand={onExpandTerminal} />
         ) : (
           <SectionCard
-            title='Starlink Dish Terminal'
+            title={t("Starlink Dish Terminal")}
             className='col-span-12'
             meta={
               connectionState === "unreachable"
-                ? "dish isn’t answering — no status received yet"
-                : "waiting for the dish’s first reply…"
+                ? t("dish isn’t answering — no status received yet")
+                : t("waiting for the dish’s first reply…")
             }
           />
         )}

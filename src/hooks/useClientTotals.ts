@@ -5,6 +5,7 @@
 // clients the router reports right now.
 
 import { useCallback, useEffect, useState } from "react";
+import { t } from "../i18n/translate";
 import { usageKey, type ClientUsageTotal } from "@core/clientUsage";
 import type { MergeCandidate } from "@core/clientTotals";
 import { apiRequest } from "../lib/apiHost";
@@ -35,8 +36,10 @@ export function useClientTotals() {
       response.ok
         ? null
         : response.status === 403
-          ? "The historian refused the change — open the dashboard from this machine or your local network."
-          : `The historian rejected the change (HTTP ${response.status}).`,
+          ? t(
+              "The historian refused the change — open the dashboard from this machine or your local network.",
+            )
+          : t("The historian rejected the change (HTTP {status}).", { status: response.status }),
     );
   }, []);
 

@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { t } from "../../i18n/translate";
 import { ChevronDownIcon, ChevronUpIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -163,7 +164,7 @@ function TimeDial({ minutes, onChange }: { minutes: number; onChange: (minutes: 
   return (
     <div className='flex items-center justify-center gap-1.5'>
       <TimeStepper
-        label='hour'
+        label={t("hour")}
         onUp={() => stepHour(1)}
         onDown={() => stepHour(-1)}
         editing={editingHour}
@@ -188,7 +189,7 @@ function TimeDial({ minutes, onChange }: { minutes: number; onChange: (minutes: 
           <button
             type='button'
             onClick={startEditHour}
-            title='Click to type'
+            title={t("Click to type")}
             className='grid w-8 cursor-text place-items-center rounded-sm transition-colors hover:bg-accent'
           >
             <TwoDigit value={hour12} tensSequence={HOUR_TENS} onesSequence={HOUR_ONES} />
@@ -199,7 +200,7 @@ function TimeDial({ minutes, onChange }: { minutes: number; onChange: (minutes: 
       <span className='text-[16px] font-semibold leading-none text-muted-foreground'>:</span>
 
       <TimeStepper
-        label='minute'
+        label={t("minute")}
         onUp={() => stepMinute(1)}
         onDown={() => stepMinute(-1)}
         editing={editingMinute}
@@ -224,7 +225,7 @@ function TimeDial({ minutes, onChange }: { minutes: number; onChange: (minutes: 
           <button
             type='button'
             onClick={startEditMinute}
-            title='Click to type'
+            title={t("Click to type")}
             className='grid w-8 cursor-text place-items-center rounded-sm transition-colors hover:bg-accent'
           >
             <TwoDigit value={minute} tensSequence={MINUTE_TENS} onesSequence={MINUTE_ONES} />

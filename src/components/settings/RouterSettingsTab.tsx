@@ -8,6 +8,7 @@ import { DishClient, type WifiNetworkConfigJson } from "@core/dishClient";
 import type { RouterUnreachable } from "../../lib/routerDiagnosis";
 import { Badge } from "@/components/ui/badge";
 import { CollapsibleSection, DangerAction, SectionLabel, SettingRow } from "./settingsChrome";
+import { t } from "../../i18n/translate";
 import { RouterAddressRow } from "./RouterAddressRow";
 import { CustomDnsSection } from "./CustomDnsSection";
 import { SubnetSection } from "./SubnetSection";
@@ -108,12 +109,12 @@ export function RouterSettingsTab({
 
       {configKnown && (
         <>
-          <SectionLabel>Networks</SectionLabel>
+          <SectionLabel>{t("Networks")}</SectionLabel>
           {ssids.map(([ssid, bands]) => (
             <SettingRow
               key={ssid}
               title={ssid}
-              caption='WPA2 · password managed in the Starlink app'
+              caption={t("WPA2 · password managed in the Starlink app")}
             >
               {[...new Set(bands)].map((band) => (
                 <Badge key={band}>{band}</Badge>
@@ -123,11 +124,11 @@ export function RouterSettingsTab({
 
           {meshNodes.length > 0 && (
             <>
-              <SectionLabel>Mesh nodes</SectionLabel>
+              <SectionLabel>{t("Mesh nodes")}</SectionLabel>
               {meshNodes.map((node, nodeIndex) => (
                 <SettingRow
                   key={nodeIndex}
-                  title={node.displayName ?? "Mesh node"}
+                  title={node.displayName ?? t("Mesh node")}
                   caption={node.hardwareVersion ? `hardware ${node.hardwareVersion}` : undefined}
                 >
                   <Badge tone={node.auth !== "MESH_AUTH_TRUSTED" ? "critical" : "neutral"}>
@@ -140,7 +141,7 @@ export function RouterSettingsTab({
 
           {wifiConfig?.boot?.evenSideSoftwareVersion && (
             <SettingRow
-              title='Router firmware'
+              title={t("Router firmware")}
               caption={`country ${wifiConfig.countryCode ?? "—"}`}
             >
               <span className='font-mono text-[12px] text-muted-foreground tabular-nums'>
@@ -151,9 +152,9 @@ export function RouterSettingsTab({
         </>
       )}
 
-      <SectionLabel>Maintenance</SectionLabel>
+      <SectionLabel>{t("Maintenance")}</SectionLabel>
       <DangerAction
-        title='Reboot router'
+        title={t("Reboot router")}
         caption={
           answering
             ? "WiFi drops for a minute or two; the dish stays up"
@@ -166,11 +167,11 @@ export function RouterSettingsTab({
         onRun={async () => {
           const routerClient = await DishClient.load("router");
           await routerClient.reboot();
-          return "Reboot sent — the router is restarting.";
+          return t("Reboot sent — the router is restarting.");
         }}
       />
       <DangerAction
-        title='Factory reset router'
+        title={t("Factory reset router")}
         caption={
           answering || accountConnected
             ? "Wipes the WiFi name, password and every router setting. Not reversible."
@@ -186,16 +187,18 @@ export function RouterSettingsTab({
           // wanted: the account reaches it there and nothing local does.
           if (!answering) {
             await applyRouterConfigUpdate({ kind: "factoryReset" });
-            return "Factory reset sent through your Starlink account — the router is wiping and restarting.";
+            return t(
+              "Factory reset sent through your Starlink account — the router is wiping and restarting.",
+            );
           }
           await (await DishClient.load("router")).factoryReset();
-          return "Factory reset sent — the router is wiping and restarting.";
+          return t("Factory reset sent — the router is wiping and restarting.");
         }}
       />
-      <CollapsibleSection title='Advanced'>
+      <CollapsibleSection title={t("Advanced")}>
         {addresses && (
           <>
-            <SectionLabel>Connection</SectionLabel>
+            <SectionLabel>{t("Connection")}</SectionLabel>
             <RouterAddressRow
               addresses={addresses}
               onChanged={(next) => {
@@ -218,7 +221,7 @@ export function RouterSettingsTab({
             />
           </>
         )}
-        <SectionLabel>Network</SectionLabel>
+        <SectionLabel>{t("Network")}</SectionLabel>
         <SubnetSection
           currentSubnet={configSubnet ?? cloudSubnet}
           disabled={!accountConnected}
@@ -233,7 +236,7 @@ export function RouterSettingsTab({
             rereadCloudSubnet();
           }}
         />
-        <SectionLabel>Bypass</SectionLabel>
+        <SectionLabel>{t("Bypass")}</SectionLabel>
         <BypassSection
           reported={bypassed}
           routerAnswering={answering}

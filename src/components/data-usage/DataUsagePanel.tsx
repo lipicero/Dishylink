@@ -8,7 +8,8 @@ import { useDataUsage, type UsageBucket } from "../../hooks/useDataUsage";
 import type { EnergyRange } from "../../hooks/useEnergyHistory";
 import { formatGigabytes } from "../../lib/format";
 import { RangeBars, type RangeBarColumn } from "../shared/RangeBarChart";
-import { RANGE_TABS, bucketLabel } from "../shared/rangeTabs";
+import { localizedRangeTabs, bucketLabel } from "../shared/rangeTabs";
+import { t } from "../../i18n/translate";
 import { SegmentedControl } from "../ui/segmented-control";
 import { Callout } from "../ui/callout";
 import { Explainer } from "../ui/explainer";
@@ -40,7 +41,7 @@ function UsageBars({ buckets, range }: { buckets: UsageBucket[]; range: EnergyRa
       key: bucket.t,
       label: when,
       title: missing
-        ? `${when} · no data — the historian wasn't running`
+        ? t("{when} · no data — the historian wasn't running", { when })
         : `${when} · ↓${withUnit(bucket.downGB!)} · ↑${withUnit(bucket.upGB!)}`,
       bar: missing ? (
         // An empty slot, not a zero one: mark the hole rather than draw a
@@ -78,10 +79,10 @@ export function DataUsagePanel() {
   return (
     <div>
       <SegmentedControl
-        options={SOURCE_TABS}
+        options={SOURCE_TABS.map((tab) => ({ ...tab, label: t(tab.label) }))}
         value={source}
         onChange={setSource}
-        label='Data usage source'
+        label={t("Data usage source")}
         variant='glider'
         className='mb-1'
       />
@@ -98,8 +99,9 @@ function LocalDataUsage() {
   if (unavailable) {
     return (
       <Callout className='mt-2.5'>
-        Data usage needs the history recorder running. Start it with <code>npm run historian</code>{" "}
-        and Dishylink will meter traffic from now on.
+        {t(
+          "Data usage needs the history recorder running. Start it with npm run historian and Dishylink will meter traffic from now on.",
+        )}
       </Callout>
     );
   }
@@ -109,42 +111,42 @@ function LocalDataUsage() {
       <FigureRow
         figures={[
           {
-            label: "↓ Download",
+            label: t("↓ Download"),
             value: data ? formatGigabytes(data.totalDownGB).value : "—",
             unit: data ? formatGigabytes(data.totalDownGB).unit : "GB",
           },
           {
-            label: "↑ Upload",
+            label: t("↑ Upload"),
             value: data ? formatGigabytes(data.totalUpGB).value : "—",
             unit: data ? formatGigabytes(data.totalUpGB).unit : "GB",
           },
           {
-            label: "Total",
+            label: t("Total"),
             value: data ? formatGigabytes(data.totalDownGB + data.totalUpGB).value : "—",
             unit: data ? formatGigabytes(data.totalDownGB + data.totalUpGB).unit : "GB",
           },
         ]}
       />
       <SegmentedControl
-        options={RANGE_TABS}
+        options={localizedRangeTabs()}
         value={range}
         onChange={setRange}
-        label='Data usage range'
+        label={t("Data usage range")}
         className='mb-2.5'
       />
 
       {data && <UsageBars buckets={data.buckets} range={range} />}
       {data && (
         <div className='mt-0.5 text-[12px] font-medium text-muted-foreground'>
-          collected {coveragePct}% of this period
-          {coveragePct < 95 && " — totals cover only the time the recorder was running"}
+          {t("collected {percent}% of this period", { percent: coveragePct })}
+          {coveragePct < 95 && t(" — totals cover only the time the recorder was running")}
         </div>
       )}
 
-      <Explainer title='How is this measured?'>
-        Dishylink integrates the dish's own per-second throughput telemetry into per-minute volume,
-        on this machine. It tracks your real traffic from the moment the historian started — it is
-        not Starlink's billing meter, which lives in their cloud and counts in UTC.
+      <Explainer title={t("How is this measured?")}>
+        {t(
+          "Dishylink integrates the dish's own per-second throughput telemetry into per-minute volume, on this machine. It tracks your real traffic from the moment the historian started — it is not Starlink's billing meter, which lives in their cloud and counts in UTC.",
+        )}
       </Explainer>
 
       <DeviceUsageList />

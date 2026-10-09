@@ -17,6 +17,7 @@ import {
   powerBucketEndMs,
   recentAverage,
   hasRecentReadings,
+  sparklineBuckets,
   sparklineFrom,
 } from "../lib/readings";
 
@@ -82,16 +83,20 @@ export function useLiveReadings(samples: TelemetrySample[]): LiveReadings {
 
   // Cut once for the set. Each tile's trace covers the same 90 seconds, so
   // they belong to one memo rather than five that re-derive the same span.
-  const sparklines = useMemo<LiveSparklines>(
-    () => ({
-      downlink: sparklineFrom(samples, (sample) => sample.downlinkBps, nowMs),
-      uplink: sparklineFrom(samples, (sample) => sample.uplinkBps, nowMs),
-      latency: sparklineFrom(samples, (sample) => sample.latencyMs, nowMs),
-      power: sparklineFrom(samples, (sample) => sample.powerW, powerWindowEndMs, powerWindowEndMs),
-      pingSuccess: sparklineFrom(samples, (sample) => (1 - sample.dropRate) * 100, nowMs),
-    }),
-    [samples, nowMs, powerWindowEndMs],
-  );
+  const sparklines = useMemo<LiveSparklines>(() => {
+    const trace = (
+      getValue: (sample: TelemetrySample) => number | null,
+      atMs: number,
+      windowEndMs?: number,
+    ) => sparklineBuckets(sparklineFrom(samples, getValue, atMs, windowEndMs));
+    return {
+      downlink: trace((sample) => sample.downlinkBps, nowMs),
+      uplink: trace((sample) => sample.uplinkBps, nowMs),
+      latency: trace((sample) => sample.latencyMs, nowMs),
+      power: trace((sample) => sample.powerW, powerWindowEndMs, powerWindowEndMs),
+      pingSuccess: trace((sample) => (1 - sample.dropRate) * 100, nowMs),
+    };
+  }, [samples, nowMs, powerWindowEndMs]);
 
   return {
     nowMs,

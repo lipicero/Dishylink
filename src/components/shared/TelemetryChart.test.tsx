@@ -94,6 +94,50 @@ describe("TelemetryChart outage bands", () => {
     await waitFor(() => (outageBandCount() > 0 ? true : null), "outage band");
     expect(outageBandCount()).toBe(1);
   });
+
+  test("writes on the band why a long cut happened", async () => {
+    renderWith([
+      { startMs: NOW - 40_000, durationMs: 30_000, cause: "OBSTRUCTED", severity: "warning" },
+    ]);
+    await waitFor(() => document.querySelector("svg"), "chart");
+    await waitFor(
+      () => (document.body.textContent?.includes("Sky blocked") ? true : null),
+      "reason",
+    );
+  });
+
+  test("names a boot cut after the router when the power cycle is what started it", async () => {
+    renderWith([
+      {
+        startMs: NOW - 48_000,
+        durationMs: 0,
+        cause: "EVENT_REASON_ROUTER_POWER_CYCLE",
+        severity: "advisory",
+      },
+      {
+        startMs: NOW - 40_000,
+        durationMs: 38_170,
+        cause: "OUTAGE_BOOTING",
+        severity: "advisory",
+      },
+    ]);
+    await waitFor(() => document.querySelector("svg"), "chart");
+    await waitFor(() => (document.body.textContent?.includes("Router") ? true : null), "router");
+    expect(document.body.textContent).not.toContain("Rebooting");
+  });
+
+  test("names a sub-second blip on the band", async () => {
+    renderWith([
+      {
+        startMs: NOW - 30_000,
+        durationMs: 800,
+        cause: "OUTAGE_NO_DOWNLINK",
+        severity: "warning",
+      },
+    ]);
+    await waitFor(() => document.querySelector("svg"), "chart");
+    await waitFor(() => (document.body.textContent?.includes("No signal") ? true : null), "reason");
+  });
 });
 
 // windowTail is the one windowing function: the chart clips with it internally,

@@ -28,6 +28,7 @@ import {
   selectItemClass,
   triggerClass,
 } from "./settingsChrome";
+import { t } from "../../i18n/translate";
 import { formatClock12, localMinutesToUtcMinutes, utcMinutesToLocalMinutes } from "./sleepSchedule";
 import { TimePicker } from "./TimePicker";
 import { UPDATE_WINDOWS, updateWindowFor } from "./updateWindow";
@@ -69,11 +70,11 @@ function SnowMeltOption({ mode }: { mode: SnowMeltMode }) {
             </span>
           </TooltipTrigger>
           <TooltipContent side='left' className='max-w-56'>
-            {SNOW_MELT_DESCRIPTION[mode]}
+            {t(SNOW_MELT_DESCRIPTION[mode])}
           </TooltipContent>
         </Tooltip>
       </span>
-      <SelectPrimitive.ItemText>{SNOW_MELT_LABEL[mode]}</SelectPrimitive.ItemText>
+      <SelectPrimitive.ItemText>{t(SNOW_MELT_LABEL[mode])}</SelectPrimitive.ItemText>
     </SelectPrimitive.Item>
   );
 }
@@ -123,8 +124,8 @@ export function StarlinkSettingsTab({
       {config && (
         <>
           <SettingRow
-            title='Snow melt'
-            caption="Heats the panel to shed snow. Auto uses the dish's own sensors."
+            title={t("Snow melt")}
+            caption={t("Heats the panel to shed snow. Auto uses the dish's own sensors.")}
           >
             <Select
               value={config.snowMeltMode ?? "AUTO"}
@@ -143,11 +144,11 @@ export function StarlinkSettingsTab({
           </SettingRow>
 
           <SettingRow
-            title='Sleep schedule'
+            title={t("Sleep schedule")}
             caption={
               sleepEnabled
                 ? `Dish powers down daily at ${formatClock12(sleepStartLocal)} and wakes at ${formatClock12(wakeLocal)}`
-                : "Power the dish down for part of every day"
+                : t("Power the dish down for part of every day")
             }
           >
             <Switch
@@ -198,8 +199,10 @@ export function StarlinkSettingsTab({
               six-hour band, which is why the official app offers exactly these
               and words them "around 3 AM · Between 12 AM and 6 AM". */}
           <SettingRow
-            title='Software updates'
-            caption={`Update reboots happen ${updateWindow.range.toLowerCase()}`}
+            title={t("Software updates")}
+            caption={t("Update reboots happen {range}", {
+              range: t(updateWindow.range).toLocaleLowerCase("es"),
+            })}
           >
             <Select
               value={String(updateWindow.hour)}
@@ -216,14 +219,17 @@ export function StarlinkSettingsTab({
                     value={String(window.hour)}
                     className={selectItemClass}
                   >
-                    {window.label}
+                    {t(window.label)}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </SettingRow>
 
-          <SettingRow title='Defer updates' caption='Hold firmware updates for up to 3 days'>
+          <SettingRow
+            title={t("Defer updates")}
+            caption={t("Hold firmware updates for up to 3 days")}
+          >
             <Switch
               checked={Boolean(config.swupdateThreeDayDeferralEnabled)}
               disabled={settings.saving}
@@ -232,8 +238,8 @@ export function StarlinkSettingsTab({
           </SettingRow>
 
           <SettingRow
-            title='Debug data'
-            caption='Diagnostics + status + config as JSON, for support or bug reports'
+            title={t("Debug data")}
+            caption={t("Diagnostics + status + config as JSON, for support or bug reports")}
           >
             <button
               className={actionButton("subtle")}
@@ -245,45 +251,47 @@ export function StarlinkSettingsTab({
               }}
             >
               {copyState === "copied"
-                ? "Copied ✓"
+                ? t("Copied ✓")
                 : copyState === "failed"
-                  ? "Copy failed"
-                  : "Copy"}
+                  ? t("Copy failed")
+                  : t("Copy")}
             </button>
           </SettingRow>
 
-          <SectionLabel>Maintenance</SectionLabel>
+          <SectionLabel>{t("Maintenance")}</SectionLabel>
           <DangerAction
-            title='Reset obstruction map'
-            caption='Wipes the learned sky survey — do this after physically relocating the dish. Takes hours to relearn.'
-            buttonLabel='Reset'
+            title={t("Reset obstruction map")}
+            caption={t(
+              "Wipes the learned sky survey — do this after physically relocating the dish. Takes hours to relearn.",
+            )}
+            buttonLabel={t("Reset")}
             confirmLabel='Yes, reset map'
             onRun={async () => {
               await (await loadDish()).clearObstructionMap();
-              return "Obstruction map cleared — the survey restarts now.";
+              return t("Obstruction map cleared — the survey restarts now.");
             }}
           />
           <DangerAction
-            title='Reboot Starlink'
-            caption='Internet drops for ~2–3 minutes while the dish restarts'
-            buttonLabel='Reboot'
-            slideLabel='Slide to reboot dish'
+            title={t("Reboot Starlink")}
+            caption={t("Internet drops for ~2–3 minutes while the dish restarts")}
+            buttonLabel={t("Reboot")}
+            slideLabel={t("Slide to reboot dish")}
             confirmLabel='Reboot dish'
             onRun={async () => {
               await (await loadDish()).reboot();
-              return "Reboot command sent — the dish is restarting.";
+              return t("Reboot command sent — the dish is restarting.");
             }}
           />
           <DangerAction
-            title='Factory reset Starlink'
-            caption='Wipes every dish setting back to how it shipped. Not reversible.'
-            buttonLabel='Factory reset'
-            slideLabel='Slide to factory reset the dish'
+            title={t("Factory reset Starlink")}
+            caption={t("Wipes every dish setting back to how it shipped. Not reversible.")}
+            buttonLabel={t("Factory reset")}
+            slideLabel={t("Slide to factory reset the dish")}
             confirmLabel='Factory reset dish'
             warning='Only factory reset as a last resort or when Starlink recommends it. Frequent factory resets can cause permanent hardware failure.'
             onRun={async () => {
               await (await loadDish()).factoryReset();
-              return "Factory reset sent — the dish is wiping and restarting.";
+              return t("Factory reset sent — the dish is wiping and restarting.");
             }}
           />
           {isMotorized && (

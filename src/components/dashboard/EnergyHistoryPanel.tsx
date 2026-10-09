@@ -9,7 +9,8 @@ import {
   type EnergyBucket,
 } from "../../hooks/useEnergyHistory";
 import { RangeBars, type RangeBarColumn } from "../shared/RangeBarChart";
-import { RANGE_TABS, bucketLabel } from "../shared/rangeTabs";
+import { localizedRangeTabs, bucketLabel } from "../shared/rangeTabs";
+import { t } from "../../i18n/translate";
 import { SegmentedControl } from "../ui/segmented-control";
 import { Callout } from "../ui/callout";
 
@@ -24,12 +25,17 @@ function isPartial(bucket: EnergyBucket): boolean {
 
 function bucketTitle(bucket: EnergyBucket, range: EnergyRange): string {
   const when = bucketLabel(bucket.t, range);
-  if (bucket.kWh === null) return `${when} · no data — the historian wasn't running`;
-  const total = `${when} · ${bucket.kWh.toFixed(3)} kWh`;
-  if (!isPartial(bucket)) return total;
+  if (bucket.kWh === null) return t("{when} · no data — the historian wasn't running", { when });
+  const total = bucket.kWh.toFixed(3);
+  if (!isPartial(bucket)) return t("{when} · {total} kWh", { when, total });
   const sampled = Math.round(bucket.sampledSeconds / 60);
   const expected = Math.round(bucket.expectedSeconds / 60);
-  return `${total} — only ${sampled} of ${expected} min recorded`;
+  return t("{when} · {total} kWh — only {sampled} of {expected} min recorded", {
+    when,
+    total,
+    sampled,
+    expected,
+  });
 }
 
 function EnergyBars({ buckets, range }: { buckets: EnergyBucket[]; range: EnergyRange }) {
@@ -70,20 +76,20 @@ export function EnergyHistoryPanel({ active }: { active: boolean }) {
   return (
     <div className='mt-4 border-t border-hairline pt-[13px]'>
       <div className='flex flex-wrap items-center justify-between gap-2.5'>
-        <span className='text-[14.5px] font-[650]'>Total energy used</span>
+        <span className='text-[14.5px] font-[650]'>{t("Total energy used")}</span>
         <SegmentedControl
-          options={RANGE_TABS}
+          options={localizedRangeTabs()}
           value={range}
           onChange={setRange}
-          label='Energy range'
+          label={t("Energy range")}
         />
       </div>
 
       {unavailable ? (
         <Callout className='mt-2.5'>
-          Long-term energy needs the history recorder running. Start it with{" "}
-          <code>npm run historian</code>
-          and it will build up day / week / month history from now on.
+          {t(
+            "Long-term energy needs the history recorder running. Start it with npm run historian and it will build up day / week / month history from now on.",
+          )}
         </Callout>
       ) : (
         <>
@@ -92,8 +98,8 @@ export function EnergyHistoryPanel({ active }: { active: boolean }) {
           </div>
           {data && (
             <div className='mt-1 text-[12px] font-medium text-muted-foreground'>
-              collected {coveragePct}% of this period
-              {coveragePct < 95 && " — total covers only the time the recorder was running"}
+              {t("collected {percent}% of this period", { percent: coveragePct })}
+              {coveragePct < 95 && t(" — total covers only the time the recorder was running")}
             </div>
           )}
           {data && <EnergyBars buckets={data.buckets} range={range} />}

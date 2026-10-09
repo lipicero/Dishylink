@@ -1,21 +1,23 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dishylink — Starlink Companion (Unofficial)</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <!-- App sets data-theme in an effect, which lands after the first paint — on a
          dark-by-default dashboard that showed as a white flash on every load. Same
-         key, same default and same resolution of "system" as src/lib/theme.ts. -->
+         key, same default and same resolution of "system" as src/lib/theme.ts.
+         The bundle's CSS arrives with the module, so this page colour has to be
+         here or the reload sits on the browser's white canvas until React paints.
+         The font stylesheet used to be render-blocking, which held that white
+         canvas up until fonts.googleapis.com answered. -->
     <script>
       (function () {
+        var language = localStorage.getItem("dishylink-locale");
+        document.documentElement.lang = language === "en" ? "en" : "es";
         var stored = localStorage.getItem("dishylink-theme") || "dark";
         document.documentElement.dataset.theme =
           stored === "system"
@@ -25,6 +27,28 @@
             : stored;
       })();
     </script>
+    <style>
+      html {
+        background: #000;
+        color-scheme: dark;
+      }
+      html[data-theme="light"] {
+        background: #f4f3ee;
+        color-scheme: light;
+      }
+    </style>
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      media="print"
+      onload="this.media='all'"
+    />
+    <noscript>
+      <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      />
+    </noscript>
   </head>
   <body>
     <div id="root"></div>

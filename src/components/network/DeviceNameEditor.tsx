@@ -2,6 +2,7 @@
 // blocked one surfaces the account-required notice rather than a raw error.
 
 import { useState } from "react";
+import { t } from "../../i18n/translate";
 import type { WifiClientJson } from "@core/dishClient";
 import { Input } from "@/components/ui/input";
 import { actionButton } from "../ui/action-button";
@@ -96,7 +97,7 @@ function NameEditorForm({
           disabled={busy || !canSave}
           onClick={() => void commit()}
         >
-          {busy ? <SpinLoader variant='segment' size={16} label='Saving' /> : "Save"}
+          {busy ? <SpinLoader variant='segment' size={16} label={t("Saving")} /> : t("Save")}
         </button>
         <button className={actionButton("subtle")} disabled={busy} onClick={onDone}>
           Cancel
@@ -124,7 +125,7 @@ export function DeviceNameEditor({
     <NameEditorForm
       currentName={displayName(client)}
       initialName={client.givenName ?? client.name ?? ""}
-      placeholder='Device name'
+      placeholder={t("Device name")}
       extraValid={client.clientId !== undefined}
       onSave={(name) => onRename(client.clientId as number, name)}
       onDone={onDone}
@@ -148,7 +149,7 @@ export function MeshNodeNameEditor({
   return (
     <NameEditorForm
       currentName={currentName}
-      placeholder='Node name'
+      placeholder={t("Node name")}
       onSave={(name) => onRename(deviceId, name)}
       onDone={onDone}
     />

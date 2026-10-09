@@ -7,6 +7,7 @@ import { throughputMbps, type WifiClientJson } from "@core/dishClient";
 import { usageKey } from "@core/clientUsage";
 import { vendorForMac } from "../../lib/macVendor";
 import type { ThroughputRates } from "@core/throughputTracker";
+import { isSpanish } from "../../lib/locale";
 
 /** Silence past this reads as idle. Live polling shows noDataIdleS bouncing
  *  between 1s and 5s on devices doing nothing but background chatter. */
@@ -48,7 +49,7 @@ export function bandLabel(client: WifiClientJson): string {
 export function radioBandLabel(band: string): string {
   if (band === "RF_2GHZ") return "2.4 GHz";
   if (band === "RF_5GHZ") return "5 GHz";
-  if (band === "RF_5GHZ_HIGH") return "5 GHz high";
+  if (band === "RF_5GHZ_HIGH") return isSpanish() ? "5 GHz alta" : "5 GHz high";
   return band;
 }
 
@@ -60,13 +61,17 @@ export interface SignalQuality {
 
 /** Signal quality bucket from dBm (wifi). Ethernet has no RSSI. */
 export function signalQuality(client: WifiClientJson): SignalQuality | null {
-  if (client.iface === "ETH") return { label: "wired", bars: 4, colorVar: "--status-good" };
+  if (client.iface === "ETH")
+    return { label: isSpanish() ? "por cable" : "wired", bars: 4, colorVar: "--status-good" };
   const dbm = client.signalStrength;
   if (dbm === undefined || dbm === 0) return null;
-  if (dbm > -55) return { label: "excellent", bars: 4, colorVar: "--status-good" };
-  if (dbm > -67) return { label: "good", bars: 3, colorVar: "--status-good" };
-  if (dbm > -75) return { label: "fair", bars: 2, colorVar: "--chart-warm" };
-  return { label: "weak", bars: 1, colorVar: "--status-critical" };
+  if (dbm > -55)
+    return { label: isSpanish() ? "excelente" : "excellent", bars: 4, colorVar: "--status-good" };
+  if (dbm > -67)
+    return { label: isSpanish() ? "buena" : "good", bars: 3, colorVar: "--status-good" };
+  if (dbm > -75)
+    return { label: isSpanish() ? "regular" : "fair", bars: 2, colorVar: "--chart-warm" };
+  return { label: isSpanish() ? "débil" : "weak", bars: 1, colorVar: "--status-critical" };
 }
 
 /** Combined live rate for sorting. Reads the tracker's byte-delta rate where the
@@ -105,7 +110,11 @@ export function isClientDevice(client: WifiClientJson): boolean {
 
 export function displayName(client: WifiClientJson): string {
   return (
-    client.givenName || client.name || client.ipAddress || client.macAddress || "Unnamed device"
+    client.givenName ||
+    client.name ||
+    client.ipAddress ||
+    client.macAddress ||
+    (isSpanish() ? "Dispositivo sin nombre" : "Unnamed device")
   );
 }
 
@@ -117,5 +126,5 @@ export function deviceSubtitle(client: WifiClientJson): string {
   // "Private" is a meaningful subtitle, not a missing brand — a device behind a
   // randomized MAC. Show it like the official app does rather than hiding it.
   if (vendor && !parts.includes(vendor)) parts.push(vendor);
-  return parts.join(" · ") || "unknown device";
+  return parts.join(" · ") || (isSpanish() ? "dispositivo desconocido" : "unknown device");
 }
