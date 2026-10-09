@@ -72,6 +72,7 @@ function AlignmentFacts({
   reading: AlignmentReading;
 }) {
   const stats = status.alignmentStats;
+  const attitudeState = formatAttitudeState(stats?.attitudeEstimationState);
   // Two columns matching the two dials above: rotation/azimuth on the left,
   // tilt/elevation on the right. Each column holds its own rows, so one can gain
   // or lose a row without shifting the other.
@@ -81,7 +82,9 @@ function AlignmentFacts({
       <FactColumn>
         <FactRow
           label={t("Current rotation")}
-          hint='Current rotation (boresight azimuth) is the compass direction the dish is actually pointing, measured clockwise from North (0° to 360°).'
+          hint={t(
+            "Current rotation (boresight azimuth) is the compass direction the dish is actually pointing, measured clockwise from North (0° to 360°).",
+          )}
         >
           <span className='font-mono tabular-nums'>{reading.boresightAzimuthDeg.toFixed(1)}°</span>
         </FactRow>
@@ -89,7 +92,9 @@ function AlignmentFacts({
             not only what is. Both are the dish's own current-minus-target. */}
         <FactRow
           label={t("Rotate recommendation")}
-          hint='How far to turn the dish around, and which way, seen from above. ↺ is anticlockwise, ↻ is clockwise.'
+          hint={t(
+            "How far to turn the dish around, and which way, seen from above. ↺ is anticlockwise, ↻ is clockwise.",
+          )}
         >
           <span
             className='font-mono tabular-nums'
@@ -101,7 +106,9 @@ function AlignmentFacts({
         </FactRow>
         <FactRow
           label={t("Target azimuth")}
-          hint='The compass direction the dish wants to point, clockwise from North, and how far either side of it still counts as aligned.'
+          hint={t(
+            "The compass direction the dish wants to point, clockwise from North, and how far either side of it still counts as aligned.",
+          )}
         >
           <span className='font-mono tabular-nums'>
             {reading.desiredAzimuthDeg.toFixed(1)}° ±{reading.azimuthToleranceDeg.toFixed(0)}°
@@ -109,18 +116,26 @@ function AlignmentFacts({
         </FactRow>
         <FactRow
           label={t("Boresight error")}
-          hint={`Boresight error (pointing error) is how far the dish is pointing from where it wants to point, as one angle. Under ${SEPARATION_LIMIT_DEG}° counts as aligned.`}
+          hint={t(
+            "Boresight error (pointing error) is how far the dish is pointing from where it wants to point, as one angle. Under {limit}° counts as aligned.",
+            { limit: SEPARATION_LIMIT_DEG },
+          )}
         >
           <span
             className='font-mono tabular-nums'
             style={{ color: adjustmentColor(reading.boresightErrorDeg) }}
           >
-            {reading.boresightErrorDeg.toFixed(2)}° · ideal &lt;{SEPARATION_LIMIT_DEG}°
+            {t("{error}° · ideal <{limit}°", {
+              error: reading.boresightErrorDeg.toFixed(2),
+              limit: SEPARATION_LIMIT_DEG,
+            })}
           </span>
         </FactRow>
         <FactRow
           label={t("Attitude uncertainty")}
-          hint='How sure the dish is of its own orientation. Smaller is better — a large figure means the readings above are still settling.'
+          hint={t(
+            "How sure the dish is of its own orientation. Smaller is better — a large figure means the readings above are still settling.",
+          )}
         >
           <span className='font-mono tabular-nums'>
             ±{(stats?.attitudeUncertaintyDeg ?? 0).toFixed(2)}°
@@ -128,18 +143,24 @@ function AlignmentFacts({
         </FactRow>
         <FactRow
           label={t("Attitude estimation state")}
-          hint='Whether the dish has finished working out its own orientation. Converged means the alignment figures can be trusted.'
+          hint={t(
+            "Whether the dish has finished working out its own orientation. Converged means the alignment figures can be trusted.",
+          )}
         >
           <span className='font-mono tabular-nums'>
-            {formatAttitudeState(stats?.attitudeEstimationState) ?? "—"}
+            {attitudeState ? t(attitudeState, undefined, "alignment") : "—"}
           </span>
         </FactRow>
         <FactRow
           label={t("Satellites in View (GPS)")}
-          hint='GPS satellites the dish can currently see. It uses these to fix its own position and orientation, not for the internet link.'
+          hint={t(
+            "GPS satellites the dish can currently see. It uses these to fix its own position and orientation, not for the internet link.",
+          )}
         >
           <span className='font-mono tabular-nums'>
-            {status.gpsStats?.gpsValid ? `${status.gpsStats.gpsSats ?? 0} satellites` : "no fix"}
+            {status.gpsStats?.gpsValid
+              ? t("{count} satellites", { count: status.gpsStats.gpsSats ?? 0 })
+              : t("no fix")}
           </span>
         </FactRow>
       </FactColumn>
@@ -147,13 +168,17 @@ function AlignmentFacts({
       <FactColumn>
         <FactRow
           label={t("Current tilt")}
-          hint='Current tilt (tilt angle) is the physical angle of the dish plate off flat. Flat is 0°, and the steeper the plate the lower it aims.'
+          hint={t(
+            "Current tilt (tilt angle) is the physical angle of the dish plate off flat. Flat is 0°, and the steeper the plate the lower it aims.",
+          )}
         >
           <span className='font-mono tabular-nums'>{reading.tiltAngleDeg.toFixed(1)}°</span>
         </FactRow>
         <FactRow
           label={t("Tilt recommendation")}
-          hint='How far to re-aim the dish up or down, and which way. Down means the dish is aiming too high; steepen the plate to bring it down.'
+          hint={t(
+            "How far to re-aim the dish up or down, and which way. Down means the dish is aiming too high; steepen the plate to bring it down.",
+          )}
         >
           <span
             className='font-mono tabular-nums'
@@ -165,7 +190,9 @@ function AlignmentFacts({
         </FactRow>
         <FactRow
           label={t("Boresight elevation")}
-          hint='Boresight elevation is how far above the horizon the dish is actually pointing, where 0° is level with the horizon and 90° is straight up.'
+          hint={t(
+            "Boresight elevation is how far above the horizon the dish is actually pointing, where 0° is level with the horizon and 90° is straight up.",
+          )}
         >
           <span className='font-mono tabular-nums'>
             {reading.boresightElevationDeg.toFixed(1)}°
@@ -176,7 +203,9 @@ function AlignmentFacts({
             the alignment test. On this dish that clamp turns 76.0° into 70.0°. */}
         <FactRow
           label={t("Target elevation")}
-          hint='Target elevation is the angle above the horizon this dish wants to point, worked out for your location.'
+          hint={t(
+            "Target elevation is the angle above the horizon this dish wants to point, worked out for your location.",
+          )}
         >
           <span className='font-mono tabular-nums'>{reading.desiredElevationDeg.toFixed(1)}°</span>
         </FactRow>
@@ -185,7 +214,9 @@ function AlignmentFacts({
             fills as its grey wedge. */}
         <FactRow
           label={t("Acceptable elevation range")}
-          hint='Acceptable elevation range is the span of elevations that still counts as aligned. It is the grey wedge drawn on the Tilt dial above — while the dish points inside it, the dial stays green.'
+          hint={t(
+            "Acceptable elevation range is the span of elevations that still counts as aligned. It is the grey wedge drawn on the Tilt dial above — while the dish points inside it, the dial stays green.",
+          )}
         >
           <span className='font-mono tabular-nums'>
             {reading.lowerElevationLimitDeg.toFixed(0)}–{reading.upperElevationLimitDeg.toFixed(0)}°
@@ -193,7 +224,9 @@ function AlignmentFacts({
         </FactRow>
         <FactRow
           label={t("Has actuators")}
-          hint='Whether the dish steers itself with motors. Without them, aiming is electronic and any physical adjustment is done by hand.'
+          hint={t(
+            "Whether the dish steers itself with motors. Without them, aiming is electronic and any physical adjustment is done by hand.",
+          )}
         >
           <span className='font-mono tabular-nums'>
             {formatHasActuators(status.alignmentStats?.hasActuators ?? status.hasActuators)}
@@ -201,10 +234,12 @@ function AlignmentFacts({
         </FactRow>
         <FactRow
           label={t("Actuation state")}
-          hint='What the dish’s motors are doing right now — idle, or actively moving to a new position.'
+          hint={t(
+            "What the dish's motors are doing right now — idle, or actively moving to a new position.",
+          )}
         >
           <span className='font-mono tabular-nums'>
-            {formatActuatorState(stats?.actuatorState)}
+            {t(formatActuatorState(stats?.actuatorState), undefined, "alignment")}
           </span>
         </FactRow>
       </FactColumn>
@@ -262,10 +297,9 @@ export function AlignmentPanel({
 
       <div className='text-[11.5px] font-medium text-muted-foreground' style={{ marginTop: 12 }}>
         <Explainer title={t("How to read this")}>
-          The wedge shows the desired pointing direction ± tolerance. The dish plate and orange
-          needle show where the dish is actually pointing. If the needle is inside the wedge, the
-          dish is aligned. If it’s outside, adjust the dish toward the wedge. Values update live
-          every 2s
+          {t(
+            "The wedge shows the desired pointing direction ± tolerance. The dish plate and orange needle show where the dish is actually pointing. If the needle is inside the wedge, the dish is aligned. If it's outside, adjust the dish toward the wedge. Values update live every 2s.",
+          )}
         </Explainer>
       </div>
     </div>

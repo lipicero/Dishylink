@@ -339,15 +339,24 @@ async function getRouterStatus(): Promise<{
   alerts?: Record<string, boolean>;
   popPingLatencyMs?: number;
   popPingDropRate5m?: number;
+  /** This router's device id, when the reply carried one. */
+  id?: string;
 }> {
   const json = (await routerCall(GET_STATUS_FIELD)) as {
     wifiGetStatus?: {
       alerts?: Record<string, boolean>;
       popPingLatencyMs?: number;
       popPingDropRate5m?: number;
+      deviceInfo?: { id?: string };
     };
   };
-  return json.wifiGetStatus ?? {};
+  const status = json.wifiGetStatus ?? {};
+  return {
+    alerts: status.alerts,
+    popPingLatencyMs: status.popPingLatencyMs,
+    popPingDropRate5m: status.popPingDropRate5m,
+    id: status.deviceInfo?.id,
+  };
 }
 
 /**
@@ -371,6 +380,36 @@ async function getRouterStatus(): Promise<{
  */
 let latestRouterLatencyMs: number | null = null;
 let latestRouterPingSuccessPercent: number | null = null;
+/** Router the status poll last identified. Kept across a missed reply so the
+ *  usage list does not forget which network this is during a blip. Stamping a
+ *  client with it is a separate, stricter check — see routerIdForRoster. */
+let latestRouterId: string | null = null;
+let latestRouterIdAt = 0;
+/** Client ids from the previous poll that actually saw a roster. */
+let previousRosterIds: Set<string> | null = null;
+/** When the live roster stopped overlapping the previous one. A cached router
+ *  id from before that moment belongs to the network we just left. */
+let rosterBreakAt = 0;
+
+/** The router id safe to stamp onto this poll's clients, or none.
+ *
+ *  A visit to another Starlink answers at the same address with a different
+ *  device id and a disjoint client list. The status reply is what names the
+ *  router, but it is on a slower clock than the client poll — so a roster that
+ *  just replaced itself is not stamped until a status from after the change
+ *  confirms who is answering. */
+function routerIdForRoster(clientIds: readonly string[], nowMs: number): string | undefined {
+  const ids = new Set(clientIds.filter((id) => id.length > 0));
+  if (ids.size > 0 && previousRosterIds && previousRosterIds.size > 0) {
+    let overlaps = false;
+    for (const id of ids) if (previousRosterIds.has(id)) overlaps = true;
+    if (!overlaps) rosterBreakAt = nowMs;
+  }
+  if (ids.size > 0) previousRosterIds = ids;
+  if (!latestRouterId || nowMs - latestRouterIdAt > 15_000) return undefined;
+  if (rosterBreakAt !== 0 && latestRouterIdAt < rosterBreakAt) return undefined;
+  return latestRouterId;
+}
 
 /**
  * Wi-Fi radio temperatures from the router. Only `temp2` is ever populated —
@@ -819,6 +858,10 @@ async function getClientReadings(): Promise<ClientReading[]> {
     (client): client is WireClient & { macAddress: string } =>
       !!client.macAddress && (!client.role || client.role === "CLIENT"),
   );
+  const rosterRouterId = routerIdForRoster(
+    clients.map((client) => (client.clientId !== undefined ? String(client.clientId) : "")),
+    nowMs,
+  );
   const hostIdentity = readHostIdentity();
   let hostCharged = false;
   let hostRowFound = false;
@@ -865,6 +908,7 @@ async function getClientReadings(): Promise<ClientReading[]> {
         totalsLiveKeys,
         client.captiveClientId,
         isHost ? takePendingSelfTraffic() : undefined,
+        rosterRouterId,
       );
     }
 
@@ -1221,6 +1265,10 @@ async function pollAlerts(): Promise<void> {
     const routerStatus = await getRouterStatus();
     latestRouterLatencyMs = readRouterLatencyMs(routerStatus.popPingLatencyMs);
     latestRouterPingSuccessPercent = readRouterPingSuccessPercent(routerStatus.popPingDropRate5m);
+    if (routerStatus.id) {
+      latestRouterId = routerStatus.id;
+      latestRouterIdAt = Date.now();
+    }
     observation.router = { alerts: routerStatus.alerts ?? {}, atMs: Date.now() };
   } catch {
     // router unreachable — leave its open episodes open. Whether the silence is
@@ -1699,6 +1747,7 @@ export function handleRequest(request: IncomingMessage, response: ServerResponse
     response.end(
       JSON.stringify({
         totals: clientTotals.totals(),
+        currentRouterId: latestRouterId,
         // Rides the list both surfaces already poll, so the prompt needs no
         // request of its own and can never disagree with the rows beside it.
         mergeCandidates: clientTotals.mergeCandidates(Date.now()),

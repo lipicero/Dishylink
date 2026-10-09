@@ -18,6 +18,9 @@ export function useClientTotals() {
    *  Rides the totals reply, so a candidate can never name a row that is not in
    *  the list beside it. */
   const [mergeCandidates, setMergeCandidates] = useState<MergeCandidate[]>([]);
+  /** Router the recorder is talking to now. Null until a status reply names it,
+   *  and on a recorder that does not report one — the list then stays one group. */
+  const [currentRouterId, setCurrentRouterId] = useState<string | null>(null);
   /** Superseded identity to the bucket it now answers to. A merged device can
    *  still be reported by the router under its old id, and only this says that
    *  the id and a row here are one device. */
@@ -52,8 +55,10 @@ export function useClientTotals() {
         mergeCandidates?: MergeCandidate[];
         selfDeviceIdentified?: boolean;
         aliases?: [string, string][];
+        currentRouterId?: string | null;
       };
       setTotals(payload.totals ?? []);
+      setCurrentRouterId(payload.currentRouterId ?? null);
       setMergeCandidates(payload.mergeCandidates ?? []);
       setAliases(new Map(payload.aliases ?? []));
       setSelfDeviceIdentified(payload.selfDeviceIdentified !== false);
@@ -163,6 +168,7 @@ export function useClientTotals() {
 
   return {
     totals,
+    currentRouterId,
     mergeCandidates,
     aliases,
     unavailable,

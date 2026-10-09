@@ -7,6 +7,7 @@
 // system needs, and nothing here has to know which dial it is drawing for.
 
 import { DEG_TO_RAD } from "../../components/alignment/alignmentMath";
+import { t } from "../../i18n/translate";
 
 /** Their needle orange, verbatim from the dish's own web app. */
 const NEEDLE_ORANGE = "#ffac30";
@@ -48,7 +49,7 @@ export function CompassLabels({ cx, cy, radius, fontSize }: RingProps & { fontSi
     { label: "N", angleDeg: -90 },
     { label: "E", angleDeg: 0 },
     { label: "S", angleDeg: 90 },
-    { label: "W", angleDeg: 180 },
+    { label: t("W", undefined, "compass"), angleDeg: 180 },
   ];
   return (
     <>

@@ -315,6 +315,43 @@ export const es: Record<string, string> = {
   "Has actuators": "Tiene actuadores",
   "Actuation state": "Estado del actuador",
   "How to read this": "Cómo leer esto",
+  "Current rotation (boresight azimuth) is the compass direction the dish is actually pointing, measured clockwise from North (0° to 360°).":
+    "La rotación actual (azimut de orientación) es la dirección de brújula hacia la que apunta la antena, medida en sentido horario desde el norte (0° a 360°).",
+  "How far to turn the dish around, and which way, seen from above. ↺ is anticlockwise, ↻ is clockwise.":
+    "Cuánto hay que girar la antena, y hacia qué lado, vista desde arriba. ↺ es antihorario, ↻ es horario.",
+  "The compass direction the dish wants to point, clockwise from North, and how far either side of it still counts as aligned.":
+    "La dirección de brújula hacia la que la antena quiere apuntar, en sentido horario desde el norte, y cuánto a cada lado sigue contando como alineada.",
+  "Boresight error (pointing error) is how far the dish is pointing from where it wants to point, as one angle. Under {limit}° counts as aligned.":
+    "El error de orientación es cuánto se desvía la antena de adonde quiere apuntar, como un solo ángulo. Menos de {limit}° cuenta como alineada.",
+  "{error}° · ideal <{limit}°": "{error}° · óptimo <{limit}°",
+  "How sure the dish is of its own orientation. Smaller is better — a large figure means the readings above are still settling.":
+    "Qué tan segura está la antena de su propia orientación. Cuanto más chico, mejor: un valor grande significa que las lecturas de arriba todavía se están estabilizando.",
+  "Whether the dish has finished working out its own orientation. Converged means the alignment figures can be trusted.":
+    "Si la antena ya terminó de calcular su propia orientación. Convergido significa que las cifras de alineación son confiables.",
+  "GPS satellites the dish can currently see. It uses these to fix its own position and orientation, not for the internet link.":
+    "Satélites GPS que la antena ve ahora. Los usa para fijar su posición y orientación, no para el enlace de internet.",
+  "Current tilt (tilt angle) is the physical angle of the dish plate off flat. Flat is 0°, and the steeper the plate the lower it aims.":
+    "La inclinación actual es el ángulo físico de la placa respecto de la horizontal. Horizontal es 0°, y cuanto más empinada está la placa, más bajo apunta.",
+  "How far to re-aim the dish up or down, and which way. Down means the dish is aiming too high; steepen the plate to bring it down.":
+    "Cuánto hay que reorientar la antena hacia arriba o hacia abajo, y hacia qué lado. Hacia abajo significa que apunta demasiado alto; empiná la placa para bajarla.",
+  "Boresight elevation is how far above the horizon the dish is actually pointing, where 0° is level with the horizon and 90° is straight up.":
+    "La elevación de orientación es cuánto por encima del horizonte apunta la antena: 0° está al nivel del horizonte y 90° es derecho hacia arriba.",
+  "Target elevation is the angle above the horizon this dish wants to point, worked out for your location.":
+    "La elevación objetivo es el ángulo sobre el horizonte hacia el que esta antena quiere apuntar, calculado para tu ubicación.",
+  "Acceptable elevation range is the span of elevations that still counts as aligned. It is the grey wedge drawn on the Tilt dial above — while the dish points inside it, the dial stays green.":
+    "El rango de elevación aceptable es el intervalo de elevaciones que sigue contando como alineado. Es la cuña gris del dial de inclinación de arriba: mientras la antena apunte adentro, el dial queda en verde.",
+  "Whether the dish steers itself with motors. Without them, aiming is electronic and any physical adjustment is done by hand.":
+    "Si la antena se orienta sola con motores. Sin ellos, la puntería es electrónica y cualquier ajuste físico se hace a mano.",
+  "What the dish's motors are doing right now — idle, or actively moving to a new position.":
+    "Qué están haciendo ahora los motores de la antena: en reposo, o moviéndose hacia una posición nueva.",
+  "The wedge shows the desired pointing direction ± tolerance. The dish plate and orange needle show where the dish is actually pointing. If the needle is inside the wedge, the dish is aligned. If it's outside, adjust the dish toward the wedge. Values update live every 2s.":
+    "La cuña muestra la dirección de puntería deseada ± la tolerancia. La placa y la aguja naranja muestran hacia dónde apunta la antena de verdad. Si la aguja está dentro de la cuña, la antena está alineada. Si está afuera, ajustá la antena hacia la cuña. Los valores se actualizan en vivo cada 2 s.",
+  "Reset@@alignment": "Reiniciado",
+  Faulted: "Con falla",
+  Invalid: "Inválido",
+  "Tilt to stowed": "Inclinando para guardar",
+  "Unwrap positive": "Desplegando en positivo",
+  "W@@compass": "O",
   Yes: "Sí",
   No: "No",
   Unknown: "Desconocido",
@@ -916,6 +953,11 @@ export const es: Record<string, string> = {
   "This is Starlink's own billing meter, read from your account. It's complete and counted in UTC — the authoritative figure your statement uses.":
     "Este es el medidor de facturación de Starlink, leído de tu cuenta. Está completo y se cuenta en UTC — es la cifra que usa tu resumen.",
   "Devices Usage": "Consumo por dispositivo",
+  "Not seen on this network": "No vistos en esta red",
+  "Recorded before the app knew which router they were on. A device from this network returns to the list above the next time it connects.":
+    "Se registraron antes de saber en qué router estaban. Si son de esta red, vuelven a la lista de arriba cuando se conecten.",
+  "Another network · {id}": "Otra red · {id}",
+  "Client ID": "ID de cliente",
   "How much data each device has used this month. The total keeps adding up even if a device leaves and rejoins your network, and it starts over at the beginning of each month.":
     "Cuántos datos usó cada dispositivo este mes. El total sigue sumando aunque un dispositivo se vaya y vuelva a la red, y se reinicia al empezar cada mes.",
   "Clear all?": "¿Borrar todo?",

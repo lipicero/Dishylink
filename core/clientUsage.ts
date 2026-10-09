@@ -16,6 +16,9 @@ export interface ClientUsageTotal {
   sinceMs: number;
   /** Last time the device was seen active, epoch ms. */
   lastSeenMs: number;
+  /** Router this device was seen on. Absent until the recorder has observed it
+   *  while it knows which router it is talking to. */
+  routerId?: string;
 }
 
 /** The key a total is stored and looked up under — the clientId (as the historian

@@ -40,6 +40,7 @@ function monthKey(atMs: number): number {
 export function DeviceUsageList() {
   const {
     totals,
+    currentRouterId,
     mergeCandidates,
     unavailable,
     writeError,
@@ -76,6 +77,7 @@ export function DeviceUsageList() {
   const sorted = [...(totals ?? [])].sort(
     (a, b) => b.rxBytes + b.txBytes - (a.rxBytes + a.txBytes),
   );
+  const { here, unseen, others } = partitionByRouter(sorted, currentRouterId);
 
   return (
     <div className='mt-6'>
@@ -122,26 +124,25 @@ export function DeviceUsageList() {
         </div>
       )}
       {writeError && <div className='py-2.5 text-[12.5px] text-destructive'>{writeError}</div>}
-      {/* Past five devices the list scrolls in place with the app's thin bar,
-          like the client detail panel, so it never pushes the panel too tall. */}
-      <div
-        className={`flex flex-col ${sorted.length > 5 ? "thin-scroll max-h-[300px] overflow-y-auto" : ""}`}
-      >
-        {sorted.map((total) => {
-          // clientId, not MAC: same-vendor devices share a masked MAC, so a
-          // MAC key would collide and one row's action would hit its sibling.
-          const key = usageKey(total.clientId, total.macAddress);
-          return (
-            <DeviceUsageRow
-              key={key}
-              total={total}
-              nowMs={nowMs}
-              onReset={() => void reset(key)}
-              onRemove={() => void remove(key)}
-            />
-          );
-        })}
-      </div>
+      <UsageRows totals={here} nowMs={nowMs} onReset={reset} onRemove={remove} scroll />
+      {unseen.length > 0 && (
+        <UsageSection
+          title={t("Not seen on this network")}
+          note={t(
+            "Recorded before the app knew which router they were on. A device from this network returns to the list above the next time it connects.",
+          )}
+        >
+          <UsageRows totals={unseen} nowMs={nowMs} onReset={reset} onRemove={remove} />
+        </UsageSection>
+      )}
+      {[...others.entries()].map(([routerId, group]) => (
+        <UsageSection
+          key={routerId}
+          title={t("Another network · {id}", { id: shortRouterId(routerId) })}
+        >
+          <UsageRows totals={group} nowMs={nowMs} onReset={reset} onRemove={remove} />
+        </UsageSection>
+      ))}
       {/* Below the rows: the question is about two of them, and reads as a
           footnote to the list rather than a banner over it. */}
       {!selfDeviceIdentified && !unavailable && namingFixesIt && (
@@ -165,6 +166,99 @@ export function DeviceUsageList() {
         nowMs={nowMs}
         onAnswer={(candidate, same) => void answerMerge(candidate, same)}
       />
+    </div>
+  );
+}
+
+/** Last six hex digits of a router device id, enough to tell two kits apart. */
+function shortRouterId(routerId: string): string {
+  const hex = routerId
+    .replace(/^Router-/i, "")
+    .slice(-6)
+    .toUpperCase();
+  return hex || routerId;
+}
+
+/** This router's devices, devices not yet stamped, and devices of other routers. */
+function partitionByRouter(
+  totals: ClientUsageTotal[],
+  currentRouterId: string | null,
+): {
+  here: ClientUsageTotal[];
+  unseen: ClientUsageTotal[];
+  others: Map<string, ClientUsageTotal[]>;
+} {
+  const here: ClientUsageTotal[] = [];
+  const unseen: ClientUsageTotal[] = [];
+  const others = new Map<string, ClientUsageTotal[]>();
+  // No router identified yet: one list, as before. Splitting with nothing to
+  // split against would park every device under "not seen".
+  if (!currentRouterId) return { here: totals, unseen, others };
+  for (const total of totals) {
+    if (!total.routerId) unseen.push(total);
+    else if (total.routerId === currentRouterId) here.push(total);
+    else {
+      const group = others.get(total.routerId) ?? [];
+      group.push(total);
+      others.set(total.routerId, group);
+    }
+  }
+  return { here, unseen, others };
+}
+
+function UsageSection({
+  title,
+  note,
+  children,
+}: {
+  title: string;
+  note?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className='mt-4'>
+      <div className='text-[13px] font-semibold text-foreground'>{title}</div>
+      {note && (
+        <div className='mt-0.5 text-[11.5px] leading-[1.45] text-muted-foreground'>{note}</div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+function UsageRows({
+  totals,
+  nowMs,
+  onReset,
+  onRemove,
+  scroll,
+}: {
+  totals: ClientUsageTotal[];
+  nowMs: number;
+  onReset: (key: string) => void;
+  onRemove: (key: string) => void;
+  /** The main list scrolls in place past five devices, so it never pushes the
+   *  panel too tall. The other-network groups are short and stay open. */
+  scroll?: boolean;
+}) {
+  return (
+    <div
+      className={`flex flex-col ${scroll && totals.length > 5 ? "thin-scroll max-h-[300px] overflow-y-auto" : ""}`}
+    >
+      {totals.map((total) => {
+        // clientId, not MAC: same-vendor devices share a masked MAC, so a
+        // MAC key would collide and one row's action would hit its sibling.
+        const key = usageKey(total.clientId, total.macAddress);
+        return (
+          <DeviceUsageRow
+            key={key}
+            total={total}
+            nowMs={nowMs}
+            onReset={() => onReset(key)}
+            onRemove={() => onRemove(key)}
+          />
+        );
+      })}
     </div>
   );
 }

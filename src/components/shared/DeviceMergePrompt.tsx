@@ -118,7 +118,7 @@ export function DeviceMergePrompt({
 // The name gets its own line and is never clipped — it is the field the user reads
 // to decide whether the two are one device. Below it the maker ("Private" for the
 // masked address behind the split) with active/last-seen, and below that the
-// router's labelled id on its own row: what the router assigned the two differently,
+// client's labelled id on its own row: what the router assigned the two differently,
 // the technical reason they split, but not what a person judges by — set apart by a
 // softer colour, not a smaller size.
 function MergeDeviceCard({ total, nowMs }: { total: ClientUsageTotal; nowMs: number }) {
@@ -126,7 +126,7 @@ function MergeDeviceCard({ total, nowMs }: { total: ClientUsageTotal; nowMs: num
   const maker = vendor || "Private";
   const name = total.name || vendor || total.macAddress;
   const kind = classifyDevice(name);
-  const routerId = total.clientId !== undefined ? String(total.clientId) : "unknown";
+  const clientId = total.clientId !== undefined ? String(total.clientId) : "unknown";
   // Matches the usage row's threshold: a device the historian touched within two
   // minutes is here now, and "Active now" against the other's "2 days ago" is the
   // contrast that reads the direction of the merge.
@@ -142,7 +142,7 @@ function MergeDeviceCard({ total, nowMs }: { total: ClientUsageTotal; nowMs: num
           {maker} · {seenLabel}
         </span>
         <span className='text-[11.5px] leading-[1.3] text-muted-foreground'>
-          Router ID: {routerId}
+          {t("Client ID")}: {clientId}
         </span>
       </span>
       <span className='flex flex-none flex-col items-end'>
