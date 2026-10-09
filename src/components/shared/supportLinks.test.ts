@@ -17,6 +17,7 @@ describe("support menu links", () => {
       patreon: "https://www.patreon.com/DaveyHert",
       downloadPage: "https://dishylink.com/#get",
       releaseNotes: "https://github.com/DaveyHert/dishylink/blob/master/CHANGELOG.md",
+      latestRelease: "https://github.com/lipicero/Dishylink/releases/latest",
       reportIssue: "https://github.com/DaveyHert/dishylink/issues/new?labels=bug",
       requestFeature: "https://buymeacoffee.com/daveyhert/e/591024",
       contact: "mailto:hello@dishylink.com",

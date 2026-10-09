@@ -8,6 +8,9 @@
 const REPO = "https://github.com/DaveyHert/dishylink";
 // usejobmate.com reports traffic in Google Analytics, which reads these UTM tags.
 const JOBMATE = "https://usejobmate.com/?utm_source=dishylink&utm_medium=app";
+// Installed copies of this fork check lipicero/Dishylink for updates (see
+// electron-builder.yml). The download row has to open that same release feed.
+const RELEASE_REPO = "https://github.com/lipicero/Dishylink";
 
 export const SUPPORT_LINKS = {
   starRepo: REPO,
@@ -16,6 +19,7 @@ export const SUPPORT_LINKS = {
   patreon: "https://www.patreon.com/DaveyHert",
   downloadPage: "https://dishylink.com/#get",
   releaseNotes: `${REPO}/blob/master/CHANGELOG.md`,
+  latestRelease: `${RELEASE_REPO}/releases/latest`,
   reportIssue: `${REPO}/issues/new?labels=bug`,
   requestFeature: "https://buymeacoffee.com/daveyhert/e/591024",
   contact: "mailto:hello@dishylink.com",
