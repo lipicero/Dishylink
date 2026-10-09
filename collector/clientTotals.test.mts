@@ -829,6 +829,68 @@ describe("ClientTotalsStore.rejectMerge", () => {
     expect(store.rejectMerge("1", "2")).toBe(false);
   });
 
+  it("does not pair a name across two routers, or a stamp with an unstamped record", () => {
+    const home = "Router-010000000000000001B31340";
+    const away = "Router-01000000000000000049375B";
+    const store = tempStore();
+    // Idle record from before the recorder knew the router, and a live one it
+    // has since seen here. Same name is not enough to call them one device.
+    store.observe(1, OLD_MAC, 0, 0, IDLE, "A15 Ampli", live(1));
+    store.observe(1, OLD_MAC, 400, 0, IDLE + 1_000, "A15 Ampli", live(1));
+    store.observe(2, NEW_MAC, 0, 0, T0, "A15 Ampli", live(2), undefined, undefined, home);
+    store.observe(2, NEW_MAC, 80, 0, T0 + 1_000, "A15 Ampli", live(2), undefined, undefined, home);
+    expect(store.mergeCandidates(T0 + 1_000)).toEqual([]);
+
+    const elsewhere = tempStore();
+    elsewhere.observe(1, OLD_MAC, 0, 0, IDLE, "A15 Ampli", live(1), undefined, undefined, away);
+    elsewhere.observe(
+      1,
+      OLD_MAC,
+      400,
+      0,
+      IDLE + 1_000,
+      "A15 Ampli",
+      live(1),
+      undefined,
+      undefined,
+      away,
+    );
+    elsewhere.observe(2, NEW_MAC, 0, 0, T0, "A15 Ampli", live(2), undefined, undefined, home);
+    elsewhere.observe(
+      2,
+      NEW_MAC,
+      80,
+      0,
+      T0 + 1_000,
+      "A15 Ampli",
+      live(2),
+      undefined,
+      undefined,
+      home,
+    );
+    expect(elsewhere.mergeCandidates(T0 + 1_000)).toEqual([]);
+    // Same router still is the rotation the prompt exists for.
+    const same = tempStore();
+    same.observe(1, OLD_MAC, 0, 0, IDLE, "A15 Ampli", live(1), undefined, undefined, home);
+    same.observe(
+      1,
+      OLD_MAC,
+      400,
+      0,
+      IDLE + 1_000,
+      "A15 Ampli",
+      live(1),
+      undefined,
+      undefined,
+      home,
+    );
+    same.observe(2, NEW_MAC, 0, 0, T0, "A15 Ampli", live(2), undefined, undefined, home);
+    same.observe(2, NEW_MAC, 80, 0, T0 + 1_000, "A15 Ampli", live(2), undefined, undefined, home);
+    expect(same.mergeCandidates(T0 + 1_000).map((c) => `${c.fromKey}->${c.toKey}`)).toEqual([
+      "1->2",
+    ]);
+  });
+
   it("refuses keys that name no bucket, so nothing junk is persisted", () => {
     const path = tempPath();
     const store = new ClientTotalsStore(path);
@@ -838,5 +900,42 @@ describe("ClientTotalsStore.rejectMerge", () => {
     expect(store.rejectMerge("alsonope", "1")).toBe(false);
     store.snapshot();
     expect(JSON.parse(readFileSync(path, "utf8")).rejectedPairs).toEqual([]);
+  });
+});
+
+describe("ClientTotalsStore router identity", () => {
+  const HOME = "Router-010000000000000001B31340";
+  const AWAY = "Router-01000000000000000049375B";
+
+  it("stamps the router it was seen on and ignores a later reading from another", () => {
+    const store = tempStore();
+    store.observe(A, MAC, 1_000, 0, T0, "Phone", live(A), undefined, undefined, HOME);
+    store.observe(A, MAC, 6_000, 0, T0 + 1_000, "Phone", live(A), undefined, undefined, HOME);
+    // Same clientId, different kit. Its counter must not land on this phone.
+    store.observe(
+      A,
+      MAC,
+      50_000,
+      9_000,
+      T0 + 2_000,
+      "Other phone",
+      live(A),
+      undefined,
+      undefined,
+      AWAY,
+    );
+    const [total] = store.totals(String(A));
+    expect(total.rxBytes).toBe(5_000);
+    expect(total.txBytes).toBe(0);
+    expect(total.routerId).toBe(HOME);
+    expect(total.name).toBe("Phone");
+  });
+
+  it("keeps the stamp across a restart", () => {
+    const path = tempPath();
+    const store = new ClientTotalsStore(path);
+    store.observe(A, MAC, 0, 0, T0, "Phone", live(A), undefined, undefined, HOME);
+    store.snapshot();
+    expect(new ClientTotalsStore(path).totals(String(A))[0].routerId).toBe(HOME);
   });
 });

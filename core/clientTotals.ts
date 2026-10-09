@@ -52,7 +52,6 @@ export interface ClientTotal {
   /** The (vendor-masked) MAC. Kept as re-anchoring evidence, never the key. */
   macAddress: string;
   name?: string;
-  ipAddress?: string;
   /** Authoritative cumulative bytes this billing month, across every reconnect. */
   rxBytes: number;
   txBytes: number;
@@ -60,6 +59,9 @@ export interface ClientTotal {
   sinceMs: number;
   /** Last time the device was observed active, epoch ms. */
   lastSeenMs: number;
+  /** Router this bucket was seen on (`deviceInfo.id`). Absent on a record from
+   *  before the recorder knew which kit it was talking to. */
+  routerId?: string;
   /** Completed months, oldest first. */
   months?: MonthTotal[];
 }
@@ -68,9 +70,6 @@ export interface TotalState {
   clientId?: number;
   macAddress: string;
   name?: string;
-  /** Last IP address the router reported, so a device with no name can be
-   *  shown as the network list shows it, without a fresh roster request. */
-  ipAddress?: string;
   /** The router's per-client hash, when it sent one. Kept as re-anchoring
    *  evidence that outlives a MAC change: unlike the MAC it is not something the
    *  device rotates, and unlike clientId it is not reissued by this router on a
@@ -100,6 +99,10 @@ export interface TotalState {
   /** When the counter was last read. 0 forces the next reading to re-baseline
    *  instead of measuring across it (a fresh bucket, an adoption, a month roll). */
   lastPollMs: number;
+  /** Router this bucket was seen on. Set on the first reading that knows it, and
+   *  never rewritten: a later reading from a different router is a different
+   *  network's client, even when the clientId number happens to match. */
+  routerId?: string;
   /** The recorder's own polling, measured but not yet taken off this counter. A
    *  debt, not a per-reading subtraction: the recorder polls several times per
    *  router refresh, so most readings show a counter that has not moved. */
@@ -280,6 +283,14 @@ function monthsBackStartMs(atMs: number, months: number): number {
   return date.getTime();
 }
 
+/** Two buckets are the same router when both are unstamped, or both carry the
+ *  same id. One stamp and one blank is not a match — the blank one has not been
+ *  seen on this router. */
+function sameRouter(a: string | undefined, b: string | undefined): boolean {
+  if (a && b) return a === b;
+  return !a && !b;
+}
+
 /** The map key for a device: its clientId when known, else the MAC (a legacy or
  *  freshly-seeded bucket that has not yet been matched to a live clientId). A
  *  numeric clientId string and a colon-bearing MAC never collide. */
@@ -453,7 +464,7 @@ export class ClientTotalsCore {
     liveKeys: Set<string>,
     captiveClientId?: string,
     selfTraffic?: { receivedBytes: number; sentBytes: number },
-    ipAddress?: string,
+    routerId?: string,
   ): void {
     // An identity the user merged away routes into its survivor however often it
     // comes back. An adoption's alias does not: that one is inferred, and the old
@@ -461,9 +472,22 @@ export class ClientTotalsCore {
     const raw = keyOf(clientId, macAddress);
     const key = this.userMerged.has(raw) ? this.resolveKey(raw) : raw;
     let state = this.states.get(key);
+    // clientId is issued per router. The same number on another kit is not this
+    // device, and adding its counter would bill that network's traffic here.
+    if (state?.routerId && routerId && state.routerId !== routerId) return;
     if (!state)
-      state = this.adoptOrCreate(clientId, macAddress, atMs, name, liveKeys, key, captiveClientId);
+      state = this.adoptOrCreate(
+        clientId,
+        macAddress,
+        atMs,
+        name,
+        liveKeys,
+        key,
+        captiveClientId,
+        routerId,
+      );
     if (captiveClientId) state.captiveClientId = captiveClientId;
+    if (routerId) state.routerId ??= routerId;
 
     state.selfTrafficDebtRx = (state.selfTrafficDebtRx ?? 0) + (selfTraffic?.receivedBytes ?? 0);
     state.selfTrafficDebtTx = (state.selfTrafficDebtTx ?? 0) + (selfTraffic?.sentBytes ?? 0);
@@ -517,7 +541,6 @@ export class ClientTotalsCore {
     state.lastPollMs = atMs;
     state.lastSeenMs = atMs;
     if (name) state.name = name;
-    if (ipAddress) state.ipAddress = ipAddress;
   }
 
   /**
@@ -536,6 +559,7 @@ export class ClientTotalsCore {
     liveKeys: Set<string>,
     key: string,
     captiveClientId?: string,
+    routerId?: string,
   ): TotalState {
     // The router's own per-client hash, when both buckets carry one, settles
     // identity without consulting the MAC — which is the thing that just changed.
@@ -545,7 +569,10 @@ export class ClientTotalsCore {
     // at once decides nothing.
     if (captiveClientId) {
       const holders = [...this.states.values()].filter(
-        (s) => s.captiveClientId === captiveClientId && keyOf(s.clientId, s.macAddress) !== key,
+        (s) =>
+          s.captiveClientId === captiveClientId &&
+          keyOf(s.clientId, s.macAddress) !== key &&
+          sameRouter(s.routerId, routerId),
       );
       if (
         holders.length === 1 &&
@@ -558,7 +585,10 @@ export class ClientTotalsCore {
       // Count ALL buckets on this MAC (not orphans-first): two orphans plus a live
       // one must read as "not unique", not as a single adoptable candidate.
       const onMac = [...this.states.values()].filter(
-        (s) => s.macAddress === macAddress && keyOf(s.clientId, s.macAddress) !== key,
+        (s) =>
+          s.macAddress === macAddress &&
+          keyOf(s.clientId, s.macAddress) !== key &&
+          sameRouter(s.routerId, routerId),
       );
       const orphan = onMac[0];
       if (onMac.length === 1 && !liveKeys.has(keyOf(orphan.clientId, orphan.macAddress))) {
@@ -755,6 +785,10 @@ export class ClientTotalsCore {
         if (target.lastSeenMs <= source.lastSeenMs) continue;
         if (source.name!.trim().toLowerCase() !== target.name!.trim().toLowerCase()) continue;
         if (this.isRejected(fromKey, toKey)) continue;
+        // A name shared across two routers is two networks, not a Wi-Fi address
+        // rotation. One side still unstamped is the same doubt: the recorder has
+        // not seen it on this router, so it must not be offered as this device.
+        if (!sameRouter(source.routerId, target.routerId)) continue;
         const foldsBytes = source.periodMonth === target.periodMonth;
         candidates.push({
           fromKey,
@@ -838,11 +872,11 @@ export class ClientTotalsCore {
       clientId: s.clientId,
       macAddress: s.macAddress,
       name: s.name,
-      ipAddress: s.ipAddress,
       rxBytes: monthlyRx(s),
       txBytes: monthlyTx(s),
       sinceMs: s.sinceMs,
       lastSeenMs: s.lastSeenMs,
+      routerId: s.routerId,
       months: s.months,
     });
     if (clientKey) {
