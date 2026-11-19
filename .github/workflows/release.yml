@@ -63,6 +63,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.21.0
       - run: npm ci
       # Both mac archs in one invocation: electron-builder writes a single
       # latest-mac.yml covering arm64 and x64. Two separate jobs would each
@@ -80,6 +83,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.21.0
       - run: npm ci
       - run: npm run release:win
         env:
@@ -94,6 +100,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 12.21.0
       - run: npm ci
       - run: npm run release:linux
         env:
