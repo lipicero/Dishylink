@@ -2,6 +2,13 @@
 
 All notable changes to Dishylink are documented here.
 
+## [1.4.1] - 2026-11-19
+
+### Updates
+
+- The update notice now opens the installer for your operating system and
+  architecture directly. Unsupported combinations open the GitHub releases page.
+
 ## [1.4.0] - 2026-11-19
 
 ### Performance

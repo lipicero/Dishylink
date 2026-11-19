@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { SUPPORT_LINKS } from "./supportLinks";
+import { getUpdateDownloadUrl, SUPPORT_LINKS } from "./supportLinks";
 
 // The expected values are written out in full rather than built from REPO the
 // way the source builds them. Sharing that constant would make this pass no
@@ -15,7 +15,7 @@ describe("support menu links", () => {
       githubSponsors: "https://github.com/sponsors/daveyhert",
       buyMeACoffee: "https://buymeacoffee.com/daveyhert",
       patreon: "https://www.patreon.com/DaveyHert",
-      downloadPage: "https://dishylink.com/#get",
+      downloadPage: "https://github.com/lipicero/Dishylink/releases/latest",
       releaseNotes: "https://github.com/lipicero/Dishylink/releases/latest",
       latestRelease: "https://github.com/lipicero/Dishylink/releases/latest",
       reportIssue: "https://github.com/DaveyHert/dishylink/issues/new?labels=bug",
@@ -26,5 +26,32 @@ describe("support menu links", () => {
       privacyPolicy: "https://github.com/DaveyHert/dishylink/blob/master/PRIVACY.md",
       disclaimer: "https://github.com/DaveyHert/dishylink/blob/master/DISCLAIMER.md",
     });
+  });
+
+  it("links to the matching release asset for the current desktop architecture", () => {
+    expect(getUpdateDownloadUrl("1.5.0", "win32", "x64")).toBe(
+      "https://github.com/lipicero/Dishylink/releases/download/v1.5.0/Dishylink-1.5.0-x64.exe",
+    );
+    expect(getUpdateDownloadUrl("1.5.0", "win32", "arm64")).toBe(
+      "https://github.com/lipicero/Dishylink/releases/download/v1.5.0/Dishylink-1.5.0-arm64.exe",
+    );
+    expect(getUpdateDownloadUrl("1.5.0", "darwin", "arm64")).toBe(
+      "https://github.com/lipicero/Dishylink/releases/download/v1.5.0/Dishylink-1.5.0-arm64.dmg",
+    );
+    expect(getUpdateDownloadUrl("1.5.0", "darwin", "x64")).toBe(
+      "https://github.com/lipicero/Dishylink/releases/download/v1.5.0/Dishylink-1.5.0-x64.dmg",
+    );
+    expect(getUpdateDownloadUrl("1.5.0", "linux", "x64")).toBe(
+      "https://github.com/lipicero/Dishylink/releases/download/v1.5.0/Dishylink-1.5.0-amd64.deb",
+    );
+  });
+
+  it("falls back to the releases page when there is no matching installer", () => {
+    expect(getUpdateDownloadUrl("1.5.0", "linux", "arm64")).toBe(
+      "https://github.com/lipicero/Dishylink/releases/latest",
+    );
+    expect(getUpdateDownloadUrl("1.5.0")).toBe(
+      "https://github.com/lipicero/Dishylink/releases/latest",
+    );
   });
 });

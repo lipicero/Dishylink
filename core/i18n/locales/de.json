@@ -441,6 +441,8 @@
   },
   "whatsNew": {
     "title": "Neu in Dishylink {{version}}",
+    "updateDownloadTitle": "Updates direkt herunterladen.",
+    "updateDownloadBody": "Der Update-Hinweis öffnet den Installer für Ihr Betriebssystem und Ihre Prozessorarchitektur. Sie müssen ihn nicht mehr aus der Release-Liste auswählen.",
     "screensTitle": "Nur der geöffnete Bildschirm wird geladen.",
     "screensBody": "Die Bereiche werden erst beim Öffnen geladen. Die Satellitenverfolgung und ihre Daten starten erst, wenn Sie die Himmelsansicht öffnen.",
     "linuxTitle": "Debian-Paket für Linux.",

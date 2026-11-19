@@ -52,12 +52,13 @@ describe("what's new", () => {
 describe("highlightsSince", () => {
   const bodies = (lastSeen: string | null) => highlightsSince(lastSeen).map((item) => item.body);
 
-  it("shows someone on 1.3.2 only what 1.4.0 added", () => {
-    expect(bodies("1.3.2")).toEqual(["whatsNew.screensBody"]);
+  it("shows someone on 1.4.0 only what 1.4.1 added", () => {
+    expect(bodies("1.4.0")).toEqual(["whatsNew.updateDownloadBody"]);
   });
 
-  it("shows the 1.4.0 and 1.3.2 highlights to someone on 1.3.1", () => {
+  it("shows the 1.4.1, 1.4.0 and 1.3.2 highlights to someone on 1.3.1", () => {
     expect(bodies("1.3.1")).toEqual([
+      "whatsNew.updateDownloadBody",
       "whatsNew.screensBody",
       "whatsNew.linuxBody",
       "whatsNew.steadierChartsBody",
@@ -65,8 +66,9 @@ describe("highlightsSince", () => {
     ]);
   });
 
-  it("shows both later releases to someone on 1.3, newest first", () => {
+  it("shows all later releases to someone on 1.3, newest first", () => {
     expect(bodies("1.3")).toEqual([
+      "whatsNew.updateDownloadBody",
       "whatsNew.screensBody",
       "whatsNew.linuxBody",
       "whatsNew.steadierChartsBody",
@@ -79,7 +81,7 @@ describe("highlightsSince", () => {
 
   it("shows an upgrade from before the notes every release, newest first", () => {
     const all = bodies(null);
-    expect(all.slice(0, 4)).toEqual(bodies("1.3.1"));
+    expect(all.slice(0, 5)).toEqual(bodies("1.3.1"));
     expect(all).toContain("whatsNew.languagesBody");
     expect(all).toContain("whatsNew.chartsBody");
   });

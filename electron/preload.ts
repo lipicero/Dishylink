@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld("dishlink", {
   // So the renderer can word a control for the host it runs on (menu bar on
   // macOS, taskbar on Windows) without sniffing the user agent.
   platform: process.platform,
+  arch: process.arch,
   // The renderer has no shell access, so this crosses to main.
   openExternal: (url: string): void => {
     ipcRenderer.send("open-external", url);

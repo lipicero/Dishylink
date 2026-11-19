@@ -15,7 +15,7 @@ export const SUPPORT_LINKS = {
   githubSponsors: "https://github.com/sponsors/daveyhert",
   buyMeACoffee: "https://buymeacoffee.com/daveyhert",
   patreon: "https://www.patreon.com/DaveyHert",
-  downloadPage: "https://dishylink.com/#get",
+  downloadPage: `${RELEASE_REPO}/releases/latest`,
   releaseNotes: `${RELEASE_REPO}/releases/latest`,
   latestRelease: `${RELEASE_REPO}/releases/latest`,
   reportIssue: `${REPO}/issues/new?labels=bug`,
@@ -26,3 +26,19 @@ export const SUPPORT_LINKS = {
   privacyPolicy: `${REPO}/blob/master/PRIVACY.md`,
   disclaimer: `${REPO}/blob/master/DISCLAIMER.md`,
 };
+
+export function getUpdateDownloadUrl(version: string, platform?: string, arch?: string): string {
+  let asset: string | null = null;
+
+  if (platform === "darwin" && (arch === "arm64" || arch === "x64")) {
+    asset = `Dishylink-${version}-${arch}.dmg`;
+  } else if (platform === "win32" && (arch === "arm64" || arch === "x64")) {
+    asset = `Dishylink-${version}-${arch}.exe`;
+  } else if (platform === "linux" && arch === "x64") {
+    asset = `Dishylink-${version}-amd64.deb`;
+  }
+
+  if (!asset) return SUPPORT_LINKS.latestRelease;
+
+  return `${RELEASE_REPO}/releases/download/v${encodeURIComponent(version)}/${asset}`;
+}

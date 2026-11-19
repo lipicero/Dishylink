@@ -16,6 +16,7 @@ interface Window {
     // The host OS ("darwin" | "win32" | "linux" | …), so a control can name the
     // right surface (menu bar vs taskbar) without sniffing the user agent.
     platform: string;
+    arch: string;
     // The renderer has no shell access, so opening links crosses to main.
     openExternal: (url: string) => void;
     // Tells main which interface language this window uses, so its tray menu

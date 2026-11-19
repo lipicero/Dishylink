@@ -15,7 +15,7 @@ import { XIcon } from "../../assets/icons/XIcon";
 import { LinkedinIcon } from "../../assets/icons/LinkedinIcon";
 import { ShieldIcon } from "../../assets/icons/ShieldIcon";
 import { ScaleIcon } from "../../assets/icons/ScaleIcon";
-import { SUPPORT_LINKS } from "./supportLinks";
+import { getUpdateDownloadUrl, SUPPORT_LINKS } from "./supportLinks";
 import { APP_VERSION } from "../../lib/appVersion";
 
 type IconComponent = React.ComponentType<React.ComponentProps<"svg"> & { size?: number }>;
@@ -146,6 +146,9 @@ function useUpdateAvailable(): string | null {
 export function SupportMenu() {
   const { t } = useTranslation();
   const updateVersion = useUpdateAvailable();
+  const updateDownloadUrl = updateVersion
+    ? getUpdateDownloadUrl(updateVersion, window.dishlink?.platform, window.dishlink?.arch)
+    : null;
 
   return (
     <Popover>
@@ -200,7 +203,7 @@ export function SupportMenu() {
                 <span className='size-1 rounded-full bg-red-500 shadow-[0_0_4px_1.5px_rgba(239,68,68,0.85)]' />
               </div>
               <MenuLink
-                href={SUPPORT_LINKS.downloadPage}
+                href={updateDownloadUrl ?? SUPPORT_LINKS.latestRelease}
                 icon={DownloadIcon}
                 iconClassName='text-status-good'
               >

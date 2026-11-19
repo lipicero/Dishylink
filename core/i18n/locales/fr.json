@@ -448,6 +448,8 @@
   },
   "whatsNew": {
     "title": "Nouveautés de Dishylink {{version}}",
+    "updateDownloadTitle": "Téléchargement direct des mises à jour.",
+    "updateDownloadBody": "L’avis de mise à jour ouvre l’installateur correspondant à votre système et à votre processeur, sans avoir à le choisir dans la liste des versions.",
     "screensTitle": "Seul l’écran ouvert est chargé.",
     "screensBody": "Les panneaux se chargent à leur ouverture. Le suivi des satellites et leurs données ne démarrent qu’à l’ouverture de la vue du ciel.",
     "linuxTitle": "Paquet Debian pour Linux.",
