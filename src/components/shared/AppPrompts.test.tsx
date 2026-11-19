@@ -2,7 +2,7 @@
 // profile before importing the prompts. localStorage is shared by every file in the
 // browser project, so whatever is staged here is taken back out afterwards.
 
-import { afterAll, afterEach, describe, expect, test } from "vitest";
+import { afterAll, afterEach, beforeEach, describe, expect, test } from "vitest";
 import { render, cleanup } from "vitest-browser-react";
 import { setLocale } from "@/lib/locale";
 
@@ -10,6 +10,7 @@ const STAGED = ["dishylink-theme", "dishylink-whats-new-seen", "dishylink-instal
 
 STAGED.forEach((key) => localStorage.removeItem(key));
 localStorage.setItem("dishylink-theme", "dark");
+localStorage.setItem("dishylink-whats-new-seen", "1.3.1");
 
 const { AppPrompts } = await import("./AppPrompts");
 
@@ -24,10 +25,6 @@ async function waitForText(substring: string, timeoutMs = 2000): Promise<void> {
   }
 }
 
-async function settle(): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 120));
-}
-
 function button(label: string): HTMLButtonElement {
   const found = [...document.querySelectorAll("button")].find(
     (element) => element.textContent?.trim() === label,
@@ -38,47 +35,42 @@ function button(label: string): HTMLButtonElement {
 
 afterEach(cleanup);
 afterAll(() => STAGED.forEach((key) => localStorage.removeItem(key)));
+beforeEach(() => {
+  setLocale("en");
+  localStorage.setItem("dishylink-whats-new-seen", "1.3.1");
+});
 
 describe("what's new after an update", () => {
   test("speaks the app's language", async () => {
     setLocale("es");
     render(<AppPrompts />);
-    await waitForText("Novedades de Dishylink 1.3");
-    expect(text()).toContain("Soporte multilingüe.");
-    expect(text()).toContain("Acabamos de lanzar Jobmate");
-    button("Entendido");
+    await waitForText("Novedades de Dishylink 1.3.2");
+    expect(text()).toContain("Paquete Debian para Linux.");
+    expect(text()).not.toContain("Jobmate");
+    button("Entendido").click();
   });
 
-  test("opens the walkthrough on its own, with Jobmate above and no changelog", async () => {
+  test("shows release notes without promotions or solicitation popups", async () => {
     render(<AppPrompts />);
-    await waitForText("See Jobmate in action");
-    button("See Jobmate in action").click();
-    await settle();
-
-    expect(document.querySelector("iframe")?.src).toContain(
-      "youtube-nocookie.com/embed/BxpOIzJBlg8",
-    );
-    expect(text()).toContain("We just launched Jobmate");
-    expect(text()).not.toContain("Multi-language support");
-
-    (document.querySelector("button[aria-label='Back']") as HTMLButtonElement).click();
-    await waitForText("Multi-language support");
-    expect(document.querySelector("iframe")).toBeNull();
+    await waitForText("Debian package for Linux.");
+    expect(text()).not.toContain("Jobmate");
+    expect(text()).not.toContain("Enjoying Dishylink?");
+    expect(text()).not.toContain("Help keep Dishylink going");
+    expect(text()).toContain("Full release notes");
   });
 
   test("shows once, and stays gone after Got it", async () => {
     render(<AppPrompts />);
-    await waitForText("What’s new in Dishylink 1.3");
+    await waitForText("What’s new in Dishylink 1.3.2");
     expect(text()).toContain("Full release notes");
-    expect(text()).not.toContain("Maybe later");
 
     button("Got it").click();
-    await settle();
+    await new Promise((resolve) => setTimeout(resolve, 120));
     expect(text()).not.toContain("What’s new");
 
     cleanup();
     render(<AppPrompts />);
-    await settle();
+    await new Promise((resolve) => setTimeout(resolve, 120));
     expect(text()).not.toContain("What’s new");
   });
 });

@@ -52,8 +52,19 @@ describe("what's new", () => {
 describe("highlightsSince", () => {
   const bodies = (lastSeen: string | null) => highlightsSince(lastSeen).map((item) => item.body);
 
-  it("shows someone on 1.3 only what 1.3.1 added", () => {
+  it("shows someone on 1.3.1 only what 1.3.2 added", () => {
+    expect(bodies("1.3.1")).toEqual([
+      "whatsNew.linuxBody",
+      "whatsNew.steadierChartsBody",
+      "whatsNew.startupBody",
+    ]);
+  });
+
+  it("shows both later releases to someone on 1.3, newest first", () => {
     expect(bodies("1.3")).toEqual([
+      "whatsNew.linuxBody",
+      "whatsNew.steadierChartsBody",
+      "whatsNew.startupBody",
       "whatsNew.speedBody",
       "whatsNew.signInBody",
       "whatsNew.tiltTargetBody",
@@ -62,7 +73,7 @@ describe("highlightsSince", () => {
 
   it("shows an upgrade from before the notes every release, newest first", () => {
     const all = bodies(null);
-    expect(all.slice(0, 3)).toEqual(bodies("1.3"));
+    expect(all.slice(0, 3)).toEqual(bodies("1.3.1"));
     expect(all).toContain("whatsNew.languagesBody");
     expect(all).toContain("whatsNew.chartsBody");
   });

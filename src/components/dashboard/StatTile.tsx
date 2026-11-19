@@ -7,6 +7,7 @@ import { Sparkline } from "../../assets/icons/Sparkline";
 export interface StatTileProps {
   label: string;
   value: string;
+  valueClassName?: string;
   unit?: string;
   caption?: ReactNode;
   sparkValues?: (number | null)[];
@@ -25,6 +26,7 @@ const tileClickable =
 export function StatTile({
   label,
   value,
+  valueClassName,
   unit,
   caption,
   sparkValues,
@@ -43,7 +45,11 @@ export function StatTile({
         {onOpenDetail && <span className='text-[16px] leading-none text-muted-foreground'>›</span>}
       </span>
       <div className='flex min-h-10 items-center gap-1.5'>
-        <span className='text-[34px] font-bold leading-none tracking-[-0.01em]'>{value}</span>
+        <span
+          className={`text-[34px] font-bold leading-none tracking-[-0.01em] ${valueClassName ?? ""}`}
+        >
+          {value}
+        </span>
         {unit && (
           <span className='self-end pb-[5px] text-[13px] font-medium text-muted-foreground'>
             {unit}

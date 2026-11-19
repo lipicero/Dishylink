@@ -16,7 +16,7 @@ describe("support menu links", () => {
       buyMeACoffee: "https://buymeacoffee.com/daveyhert",
       patreon: "https://www.patreon.com/DaveyHert",
       downloadPage: "https://dishylink.com/#get",
-      releaseNotes: "https://github.com/DaveyHert/dishylink/blob/master/CHANGELOG.md",
+      releaseNotes: "https://github.com/lipicero/Dishylink/releases/latest",
       latestRelease: "https://github.com/lipicero/Dishylink/releases/latest",
       reportIssue: "https://github.com/DaveyHert/dishylink/issues/new?labels=bug",
       requestFeature: "https://buymeacoffee.com/daveyhert/e/591024",
@@ -25,11 +25,6 @@ describe("support menu links", () => {
       linkedin: "http://linkedin.com/in/daveyhert/",
       privacyPolicy: "https://github.com/DaveyHert/dishylink/blob/master/PRIVACY.md",
       disclaimer: "https://github.com/DaveyHert/dishylink/blob/master/DISCLAIMER.md",
-      jobmateFromReleaseNotes:
-        "https://usejobmate.com/?utm_source=dishylink&utm_medium=app&utm_content=release_notes",
-      jobmateFromSupportMenu:
-        "https://usejobmate.com/?utm_source=dishylink&utm_medium=app&utm_content=support_menu",
-      jobmateVideo: "https://youtu.be/BxpOIzJBlg8",
     });
   });
 });

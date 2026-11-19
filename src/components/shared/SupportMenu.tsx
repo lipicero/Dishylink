@@ -1,11 +1,8 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { TFunction } from "i18next";
-import { PlayIcon } from "lucide-react";
 import type { TranslationKey } from "@core/i18n/resources";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { NewBadge } from "../ui/new-badge";
 import { HeartIcon } from "../../assets/icons/HeartIcon";
 import { StarIcon } from "../../assets/icons/StarIcon";
 import { CoffeeIcon } from "../../assets/icons/CoffeeIcon";
@@ -18,15 +15,10 @@ import { XIcon } from "../../assets/icons/XIcon";
 import { LinkedinIcon } from "../../assets/icons/LinkedinIcon";
 import { ShieldIcon } from "../../assets/icons/ShieldIcon";
 import { ScaleIcon } from "../../assets/icons/ScaleIcon";
-import { JobmateBanner } from "./JobmateBanner";
 import { SUPPORT_LINKS } from "./supportLinks";
+import { APP_VERSION } from "../../lib/appVersion";
 
 type IconComponent = React.ComponentType<React.ComponentProps<"svg"> & { size?: number }>;
-
-// Injected at build time from package.json — see vite.config.ts and
-// wxt.config.ts's `define`. Bumping package.json's version is the only edit a
-// release needs; nothing here goes stale.
-const APP_VERSION = __APP_VERSION__;
 
 // Electron's renderer is sandboxed with no shell access, so it has to cross
 // the preload bridge to main, which owns `shell.openExternal`. The web dev
@@ -63,44 +55,6 @@ interface MenuLinkEntry {
   label: TranslationKey | { literal: string };
 }
 
-interface MenuBannerEntry {
-  href: string;
-  /** Given the translator, since the entries are built before any render. */
-  banner: (t: TFunction) => React.ReactNode;
-  label: TranslationKey;
-}
-
-type MenuEntry = MenuLinkEntry | MenuBannerEntry;
-
-function BannerLink({
-  href,
-  banner,
-  children,
-}: {
-  href: string;
-  banner: React.ReactNode;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type='button'
-      className='group my-0.5 block w-full cursor-pointer overflow-hidden rounded-[10px] border border-[#1a1a1a] bg-transparent p-0 text-left'
-      onClick={() => openExternal(href)}
-    >
-      {banner}
-      <span className='flex items-center gap-2 border-t border-[#1a1a1a] px-2.5 py-2 text-[12.5px] leading-snug text-ink transition-colors group-hover:bg-hairline'>
-        <span className='flex-1'>{children}</span>
-        <span
-          aria-hidden
-          className='text-ink-secondary transition-transform group-hover:translate-x-0.5'
-        >
-          →
-        </span>
-      </span>
-    </button>
-  );
-}
-
 function MenuLink({ href, icon: Icon, iconClassName, centered, children }: MenuLinkItem) {
   return (
     <button
@@ -120,7 +74,7 @@ function MenuLink({ href, icon: Icon, iconClassName, centered, children }: MenuL
   );
 }
 
-const SECTIONS: { label: TranslationKey; badge?: TranslationKey; items: MenuEntry[] }[] = [
+const SECTIONS: { label: TranslationKey; items: MenuLinkEntry[] }[] = [
   {
     label: "support.sectionSupport",
     items: [
@@ -163,30 +117,6 @@ const SECTIONS: { label: TranslationKey; badge?: TranslationKey; items: MenuEntr
       { href: SUPPORT_LINKS.contact, icon: MailIcon, label: "support.contactMe" },
       { href: SUPPORT_LINKS.x, icon: XIcon, label: { literal: "@daveyhert" } },
       { href: SUPPORT_LINKS.linkedin, icon: LinkedinIcon, label: { literal: "LinkedIn" } },
-    ],
-  },
-  {
-    label: "support.sectionMaker",
-    badge: "support.new",
-    items: [
-      {
-        href: SUPPORT_LINKS.jobmateFromSupportMenu,
-        banner: (t) => (
-          <JobmateBanner
-            height={56}
-            waveWidth={40}
-            taglineSize={10}
-            tagline={t("support.jobmateTagline")}
-          />
-        ),
-        label: "support.jobmate",
-      },
-      {
-        href: SUPPORT_LINKS.jobmateVideo,
-        icon: PlayIcon,
-        label: "whatsNew.watch",
-        centered: true,
-      },
     ],
   },
   {
@@ -250,6 +180,14 @@ export function SupportMenu() {
               v{APP_VERSION}
             </span>
           </div>
+          <button
+            type='button'
+            onClick={() => openExternal(SUPPORT_LINKS.releaseNotes)}
+            className='mt-1 cursor-pointer border-0 bg-transparent p-0 text-[11px] text-ink-muted transition-colors hover:text-ink'
+          >
+            {t("support.changelog")} →
+          </button>
+          <p className='mt-2 text-[10px] text-ink-muted'>{t("support.forkCredit")}</p>
         </div>
 
         {/* Scrolls under the fixed header on a short window. The bottom margin keeps
@@ -273,27 +211,18 @@ export function SupportMenu() {
 
           {SECTIONS.map((section) => (
             <div key={section.label} className={SECTION}>
-              <div className={cn(MENU_LABEL, "flex items-center gap-1.5")}>
-                {t(section.label)}
-                {section.badge && <NewBadge>{t(section.badge)}</NewBadge>}
-              </div>
-              {section.items.map((entry) =>
-                "banner" in entry ? (
-                  <BannerLink key={entry.href} href={entry.href} banner={entry.banner(t)}>
-                    {t(entry.label)}
-                  </BannerLink>
-                ) : (
-                  <MenuLink
-                    key={entry.href}
-                    href={entry.href}
-                    icon={entry.icon}
-                    iconClassName={entry.iconClassName}
-                    centered={entry.centered}
-                  >
-                    {typeof entry.label === "string" ? t(entry.label) : entry.label.literal}
-                  </MenuLink>
-                ),
-              )}
+              <div className={MENU_LABEL}>{t(section.label)}</div>
+              {section.items.map((entry) => (
+                <MenuLink
+                  key={entry.href}
+                  href={entry.href}
+                  icon={entry.icon}
+                  iconClassName={entry.iconClassName}
+                  centered={entry.centered}
+                >
+                  {typeof entry.label === "string" ? t(entry.label) : entry.label.literal}
+                </MenuLink>
+              ))}
             </div>
           ))}
         </div>

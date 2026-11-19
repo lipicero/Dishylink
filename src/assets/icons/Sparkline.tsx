@@ -6,27 +6,21 @@
 
 const WIDTH = 120;
 const HEIGHT = 30;
-const POINTS = 28;
 
-/** Average the raw samples down to a fixed point count so bursty signals (idle
- *  download traffic especially) read as a calm line instead of a full-height
- *  zigzag. Buckets with no finite sample stay null and break the line. */
-function bucketAverage(values: (number | null)[]): (number | null)[] {
-  const bucketCount = Math.min(POINTS, values.length);
-  if (bucketCount < 2) return values;
-  return Array.from({ length: bucketCount }, (_, bucketIndex) => {
-    const start = Math.floor((bucketIndex * values.length) / bucketCount);
-    const end = Math.floor(((bucketIndex + 1) * values.length) / bucketCount);
-    const slice = values.slice(start, end).filter((value): value is number => value !== null);
-    return slice.length === 0 ? null : slice.reduce((sum, value) => sum + value, 0) / slice.length;
-  });
+function niceCeiling(rawMax: number): number {
+  if (rawMax <= 0) return 1;
+  const magnitude = 10 ** Math.floor(Math.log10(rawMax));
+  for (const multiplier of [1, 1.5, 2, 2.5, 4, 5, 8, 10]) {
+    if (magnitude * multiplier >= rawMax) return magnitude * multiplier;
+  }
+  return magnitude * 10;
 }
 
 function buildPath(values: (number | null)[]): string {
-  const points = bucketAverage(values);
+  const points = values;
   const finiteValues = points.filter((value): value is number => value !== null);
   if (finiteValues.length < 2) return "";
-  const maxValue = Math.max(...finiteValues, 1e-9);
+  const maxValue = niceCeiling(Math.max(...finiteValues) * 1.08);
   const stepX = WIDTH / (points.length - 1);
   let path = "";
   let pathOpen = false;

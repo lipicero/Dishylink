@@ -440,24 +440,20 @@
     "sectionLegal": "Mentions légales",
     "privacyPolicy": "Politique de confidentialité",
     "disclaimer": "Avertissement",
-    "sectionMaker": "Du même créateur",
-    "new": "Nouveau",
-    "jobmate": "Nous venons de lancer Jobmate pour réparer une recherche d'emploi qui ne fonctionne plus. Essayez-le !",
-    "jobmateTagline": "Votre copilote IA pour une recherche d'emploi plus rapide et plus intelligente"
+    "changelog": "Journal des modifications",
+    "forkCredit": "Fork de Matías Ceroleni, basé sur Dishylink."
   },
   "prompts": {
-    "dismiss": "Ignorer",
-    "maybeLater": "Peut-être plus tard",
-    "dontAskAgain": "Ne plus demander",
-    "ratingTitle": "Vous aimez Dishylink ?",
-    "ratingBody": "Si Dishylink vous est utile, merci de laisser un petit avis. Cela ne prend que quelques secondes et aide les autres utilisateurs de Starlink à trouver l'application.",
-    "leaveReview": "Laisser un avis",
-    "edgeReviewHint": "Faites défiler jusqu’à <b>Avis des utilisateurs</b> et cliquez sur <b>Ajouter un avis</b>.",
-    "donationTitle": "Aidez Dishylink à continuer",
-    "donationBody": "J'ai créé Dishylink sur mon temps libre, parce que rien de tel n'existait. S'il vous est utile, pensez à le soutenir. Votre contribution, ponctuelle ou récurrente, aide beaucoup à le maintenir."
+    "dismiss": "Fermer"
   },
   "whatsNew": {
     "title": "Nouveautés de Dishylink {{version}}",
+    "linuxTitle": "Paquet Debian pour Linux.",
+    "linuxBody": "Installez Dishylink sur Debian et les distributions Linux compatibles avec un paquet .deb.",
+    "steadierChartsTitle": "Graphiques plus stables et pannes expliquées.",
+    "steadierChartsBody": "Les grands graphiques expliquent désormais les causes des pannes, tandis que les petits graphiques en direct conservent leurs données terminées.",
+    "startupTitle": "Un démarrage plus clair.",
+    "startupBody": "Le tableau de bord conserve le thème choisi après actualisation et affiche des espaces réservés pendant le chargement des premières mesures.",
     "speedTitle": "Plus rapide sur les réseaux chargés.",
     "speedBody": "L'application ne ralentit plus quand le journal des événements se remplit de centaines de changements de bande Wi-Fi.",
     "signInTitle": "Connexion Starlink conservée.",
@@ -476,7 +472,6 @@
     "factoryResetBody": "La réinitialisation d'usine de l'antenne dans Paramètres › Starlink fonctionne de nouveau.",
     "chartsBody": "Les mouvements erratiques des graphiques sont désormais stabilisés : les graphiques ne redessinent plus leurs anciens points chaque seconde.",
     "releaseNotes": "Notes de version complètes",
-    "watch": "Voir Jobmate en action",
     "gotIt": "Compris"
   },
   "rules": {
@@ -958,6 +953,12 @@
     "powerDraw": "Consommation",
     "pingSuccess": "Pings réussis",
     "skyObstructed": "Ciel obstrué",
+    "outageBand": {
+      "sky": "Ciel obstrué",
+      "thermal": "Thermique",
+      "satellites": "Sans satellites",
+      "router": "Routeur"
+    },
     "currentTraffic": "trafic actuel",
     "popPingLive": "ping PoP, en direct",
     "currentDraw": "consommation actuelle",

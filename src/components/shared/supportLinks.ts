@@ -6,8 +6,6 @@
 // guarded, in one place.
 
 const REPO = "https://github.com/DaveyHert/dishylink";
-// usejobmate.com reports traffic in Google Analytics, which reads these UTM tags.
-const JOBMATE = "https://usejobmate.com/?utm_source=dishylink&utm_medium=app";
 // Installed copies of this fork check lipicero/Dishylink for updates (see
 // electron-builder.yml). The download row has to open that same release feed.
 const RELEASE_REPO = "https://github.com/lipicero/Dishylink";
@@ -18,7 +16,7 @@ export const SUPPORT_LINKS = {
   buyMeACoffee: "https://buymeacoffee.com/daveyhert",
   patreon: "https://www.patreon.com/DaveyHert",
   downloadPage: "https://dishylink.com/#get",
-  releaseNotes: `${REPO}/blob/master/CHANGELOG.md`,
+  releaseNotes: `${RELEASE_REPO}/releases/latest`,
   latestRelease: `${RELEASE_REPO}/releases/latest`,
   reportIssue: `${REPO}/issues/new?labels=bug`,
   requestFeature: "https://buymeacoffee.com/daveyhert/e/591024",
@@ -27,7 +25,4 @@ export const SUPPORT_LINKS = {
   linkedin: "http://linkedin.com/in/daveyhert/",
   privacyPolicy: `${REPO}/blob/master/PRIVACY.md`,
   disclaimer: `${REPO}/blob/master/DISCLAIMER.md`,
-  jobmateFromReleaseNotes: `${JOBMATE}&utm_content=release_notes`,
-  jobmateFromSupportMenu: `${JOBMATE}&utm_content=support_menu`,
-  jobmateVideo: "https://youtu.be/BxpOIzJBlg8",
 };

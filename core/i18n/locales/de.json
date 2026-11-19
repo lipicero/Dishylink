@@ -433,24 +433,20 @@
     "sectionLegal": "Rechtliches",
     "privacyPolicy": "Datenschutzerklärung",
     "disclaimer": "Haftungsausschluss",
-    "sectionMaker": "Vom selben Entwickler",
-    "new": "Neu",
-    "jobmate": "Wir haben gerade Jobmate gestartet, um den kaputten Bewerbungsprozess zu reparieren. Jetzt ausprobieren!",
-    "jobmateTagline": "Ihr KI-Copilot für eine schnellere, smartere Jobsuche"
+    "changelog": "Änderungsprotokoll",
+    "forkCredit": "Fork von Matías Ceroleni, basierend auf Dishylink."
   },
   "prompts": {
-    "dismiss": "Ausblenden",
-    "maybeLater": "Vielleicht später",
-    "dontAskAgain": "Nicht mehr fragen",
-    "ratingTitle": "Gefällt Ihnen Dishylink?",
-    "ratingBody": "Wenn Dishylink Ihnen nützlich ist, hinterlassen Sie bitte eine kurze Bewertung. Das dauert nur ein paar Sekunden und hilft anderen Starlink-Besitzern, die App zu finden.",
-    "leaveReview": "Bewertung schreiben",
-    "edgeReviewHint": "Scrollen Sie nach unten zu <b>Benutzerbewertungen</b> und klicken Sie auf <b>Bewertung hinzufügen</b>.",
-    "donationTitle": "Helfen Sie, dass es mit Dishylink weitergeht",
-    "donationBody": "Ich habe Dishylink in meiner Freizeit entwickelt, weil es nichts Vergleichbares gab. Wenn es Ihnen nützlich ist, unterstützen Sie es bitte. Ihr einmaliger oder regelmäßiger Beitrag hilft sehr, es zu pflegen."
+    "dismiss": "Schließen"
   },
   "whatsNew": {
     "title": "Neu in Dishylink {{version}}",
+    "linuxTitle": "Debian-Paket für Linux.",
+    "linuxBody": "Installieren Sie Dishylink mit einem .deb-Paket unter Debian und kompatiblen Linux-Distributionen.",
+    "steadierChartsTitle": "Stabilere Diagramme und erklärte Ausfälle.",
+    "steadierChartsBody": "Die großen Diagramme erklären jetzt mögliche Ausfallursachen, während die kleinen Live-Diagramme abgeschlossene Messwerte stabil halten.",
+    "startupTitle": "Ein übersichtlicherer Start.",
+    "startupBody": "Das Dashboard behält beim Aktualisieren das gewählte Design bei und zeigt Platzhalter, während die ersten Messwerte geladen werden.",
     "speedTitle": "Schneller in belebten Netzwerken.",
     "speedBody": "Die App wird nicht mehr langsam, wenn sich das Ereignisprotokoll mit Hunderten von WLAN-Bandwechseln füllt.",
     "signInTitle": "Starlink-Anmeldung bleibt erhalten.",
@@ -469,7 +465,6 @@
     "factoryResetBody": "Der Werksreset der Antenne unter Einstellungen › Starlink funktioniert wieder.",
     "chartsBody": "Unruhige Diagrammbewegungen sind jetzt stabil: Diagramme zeichnen ihre älteren Punkte nicht mehr jede Sekunde neu.",
     "releaseNotes": "Vollständige Versionshinweise",
-    "watch": "Jobmate in Aktion sehen",
     "gotIt": "Verstanden"
   },
   "rules": {
@@ -948,6 +943,12 @@
     "powerDraw": "Leistungsaufnahme",
     "pingSuccess": "Ping-Erfolg",
     "skyObstructed": "Himmel verdeckt",
+    "outageBand": {
+      "sky": "Himmel blockiert",
+      "thermal": "Überhitzung",
+      "satellites": "Keine Satelliten",
+      "router": "Router"
+    },
     "currentTraffic": "aktueller Datenverkehr",
     "popPingLive": "PoP-Ping, live",
     "currentDraw": "aktuelle Aufnahme",

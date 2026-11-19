@@ -20,6 +20,22 @@ const AXIS_TEXT = {
   fill: "var(--ink-muted)",
 } as const;
 
+const BAND_LABEL = {
+  fontSize: 10,
+  fontFamily: "var(--font-mono)",
+  fontWeight: 600,
+  fill: "var(--status-critical)",
+} as const;
+
+export interface OutageBandMark {
+  key: string | number;
+  x: number;
+  width: number;
+  label?: string;
+  labelX?: number;
+  labelWidth?: number;
+}
+
 /** Series colour fading to transparent — the wash under the first series. */
 export function WashGradient({ id, colorVar }: { id: string; colorVar: string }) {
   return (
@@ -117,7 +133,7 @@ export function OutageBands({
   bands,
 }: {
   frame: PlotFrame;
-  bands: readonly { key: string | number; x: number; width: number }[];
+  bands: readonly OutageBandMark[];
 }) {
   return (
     <>
@@ -131,6 +147,46 @@ export function OutageBands({
           opacity={0.09}
         />
       ))}
+    </>
+  );
+}
+
+/** Cause chips sit over the lines so their text remains legible. */
+export function OutageBandLabels({
+  frame,
+  bands,
+}: {
+  frame: PlotFrame;
+  bands: readonly OutageBandMark[];
+}) {
+  return (
+    <>
+      {bands.map(
+        (band) =>
+          band.label &&
+          band.labelX !== undefined &&
+          band.labelWidth !== undefined && (
+            <g key={band.key}>
+              <rect
+                x={band.labelX}
+                y={frame.top + 1}
+                width={band.labelWidth}
+                height={14}
+                rx={2}
+                fill='var(--surface)'
+              />
+              <text
+                x={band.labelX + band.labelWidth / 2}
+                y={frame.top + 8}
+                textAnchor='middle'
+                dominantBaseline='central'
+                {...BAND_LABEL}
+              >
+                {band.label}
+              </text>
+            </g>
+          ),
+      )}
     </>
   );
 }

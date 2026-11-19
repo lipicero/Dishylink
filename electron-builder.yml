@@ -75,6 +75,13 @@ mac:
   category: public.app-category.utilities
   identity: null
 
+linux:
+  artifactName: ${productName}-${version}-${arch}.${ext}
+  target:
+    - deb
+  category: Utility
+  icon: build/icon.png
+
 # Unsigned Windows build. There is no ad-hoc equivalent to reach for here and none
 # is needed: unlike macOS (whose notification API refuses to fire from an unsigned
 # app — see afterPack.cjs), Windows posts notifications from unsigned apps fine.

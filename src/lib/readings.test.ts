@@ -86,13 +86,25 @@ describe("powerBucketMean", () => {
 });
 
 describe("sparklineFrom", () => {
-  it("draws the last 90 seconds", () => {
-    expect(sparklineFrom(readings(NOW, 300, 40), (s) => s.powerW, NOW)).toHaveLength(91);
+  it("draws the last 90 seconds in fixed time buckets", () => {
+    expect(sparklineFrom(readings(NOW, 300, 40), (s) => s.powerW, NOW)).toHaveLength(30);
   });
 
   it("empties as the dish stays silent", () => {
     const stale = readings(NOW - 10 * 60_000, 300, 40);
     expect(sparklineFrom(stale, (s) => s.powerW, NOW)).toEqual([]);
+  });
+
+  it("keeps completed buckets unchanged while the current bucket receives samples", () => {
+    const endMs = Math.floor(NOW / 3_000) * 3_000 + 1_000;
+    const base = readings(endMs - 1_000, 100, 40);
+    const before = sparklineFrom(base, (s) => s.powerW, endMs);
+    const nextSample = { ...base[base.length - 1], timestampMs: endMs, powerW: 80 };
+    const after = sparklineFrom([...base, nextSample], (s) => s.powerW, endMs + 1_000);
+
+    expect(before).toHaveLength(30);
+    expect(after.slice(0, -1)).toEqual(before.slice(0, -1));
+    expect(after.at(-1)).toBe(60);
   });
 });
 

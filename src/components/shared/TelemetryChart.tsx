@@ -2,12 +2,21 @@
 // outage bands, crosshair + tooltip. Samples are bucketed per pixel.
 
 import { useMemo, useRef, useState, useEffect, useCallback, useId } from "react";
-import { outageEventKind, type TelemetrySample, type OutageEvent } from "@core/telemetry";
+import {
+  isChartOutage,
+  outageBandFamily,
+  placeOutageLabels,
+  type OutageFamily,
+} from "@core/outageBand";
+import { outageEventLabel, type TelemetrySample, type OutageEvent } from "@core/telemetry";
+import type { TranslationKey } from "@core/i18n/resources";
+import { useTranslation } from "react-i18next";
 import { formatClockTime } from "../../lib/format";
 import {
   Crosshair,
   NoDataBands,
   OutageBands,
+  OutageBandLabels,
   PlotBaseline,
   PlotGrid,
   PlotTimeAxis,
@@ -59,6 +68,12 @@ interface TelemetryChartProps {
 }
 
 const PLOT_MARGIN = { top: 8, right: 12, bottom: 22, left: 46 };
+const OUTAGE_FAMILY_LABELS: Record<OutageFamily, TranslationKey> = {
+  sky: "metrics.outageBand.sky",
+  thermal: "metrics.outageBand.thermal",
+  satellites: "metrics.outageBand.satellites",
+  router: "metrics.outageBand.router",
+};
 
 /**
  * Shortest stretch without samples that counts as a hole rather than a hiccup.
@@ -137,6 +152,7 @@ export function TelemetryChart({
   headroom = 1.08,
   windowEndMs: windowEndOverrideMs,
 }: TelemetryChartProps) {
+  const { t } = useTranslation();
   const timeLocale = useTimeLocale();
   const [containerRef, containerWidth] = useElementWidth();
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -252,10 +268,31 @@ export function TelemetryChart({
   // 2px, so a zero-length outage would paint a red hairline over nothing.
   const visibleOutages = outageEvents.filter(
     (outage) =>
-      outageEventKind(outage.cause) === "outage" &&
+      isChartOutage(outage.cause) &&
       outage.durationMs > 0 &&
       outage.startMs + outage.durationMs > windowStartMs &&
       outage.startMs < windowEndMs,
+  );
+  const labelForOutage = (outage: OutageEvent): string => {
+    const family = outageBandFamily(outage, outageEvents);
+    return family ? t(OUTAGE_FAMILY_LABELS[family]) : outageEventLabel(outage.cause, t);
+  };
+  const explainedBands = placeOutageLabels(
+    visibleOutages.map((outage) => {
+      const bandStartX = Math.max(xForTime(outage.startMs), leftEdgeX);
+      const endMs = outage.startMs + outage.durationMs;
+      const bandEndX = Math.min(xForTime(endMs), leftEdgeX + plotWidth);
+      return {
+        key: `${outage.startMs}-${outage.cause}`,
+        x: bandStartX,
+        width: Math.max(bandEndX - bandStartX, 2),
+        label: labelForOutage(outage),
+        durationMs: outage.durationMs,
+        ongoing: endMs >= windowEndMs - 1_000,
+      };
+    }),
+    leftEdgeX,
+    plotWidth,
   );
 
   // How far the crosshair may reach for a reading. Inside a hole the nearest
@@ -288,6 +325,19 @@ export function TelemetryChart({
   const hoveredBucket = hoverIndex !== null ? buckets[hoverIndex] : null;
   const tooltipOnLeft =
     hoveredBucket !== null && xForTime(hoveredBucket.timestampMs) > containerWidth * 0.62;
+  const hoveredReasons = hoveredBucket
+    ? [
+        ...new Set(
+          visibleOutages.flatMap((outage) => {
+            const outageEnd = outage.startMs + outage.durationMs;
+            const sliceStart = hoveredBucket.timestampMs - bucketSpanMs / 2;
+            const sliceEnd = hoveredBucket.timestampMs + bucketSpanMs / 2;
+            if (outageEnd < sliceStart || outage.startMs > sliceEnd) return [];
+            return [labelForOutage(outage)];
+          }),
+        ),
+      ]
+    : [];
 
   return (
     <div className='relative' ref={containerRef}>
@@ -316,17 +366,7 @@ export function TelemetryChart({
             x: xForTime(tickTime),
           }))}
         />
-        <OutageBands
-          frame={plotFrame}
-          bands={visibleOutages.map((outage, outageIndex) => {
-            const bandStartX = Math.max(xForTime(outage.startMs), leftEdgeX);
-            const bandEndX = Math.min(
-              xForTime(outage.startMs + outage.durationMs),
-              leftEdgeX + plotWidth,
-            );
-            return { key: outageIndex, x: bandStartX, width: Math.max(bandEndX - bandStartX, 2) };
-          })}
-        />
+        <OutageBands frame={plotFrame} bands={explainedBands} />
         <NoDataBands
           frame={plotFrame}
           bands={gapRegions.flatMap((region) => {
@@ -344,6 +384,7 @@ export function TelemetryChart({
             colorVar={series[seriesIndex].colorVar}
           />
         ))}
+        <OutageBandLabels frame={plotFrame} bands={explainedBands} />
         {hoveredBucket && (
           <Crosshair
             frame={plotFrame}
@@ -377,6 +418,11 @@ export function TelemetryChart({
           <div className='mb-[5px] text-[10px] tracking-[0.05em] text-muted-foreground'>
             {formatClockTime(hoveredBucket.timestampMs, timeLocale)}
           </div>
+          {hoveredReasons.length > 0 && (
+            <div className='mb-[5px] font-semibold text-status-critical'>
+              {hoveredReasons.join(" · ")}
+            </div>
+          )}
           {series.map((chartSeries, seriesIndex) => (
             <div
               className='flex items-center justify-between gap-[7px] leading-[1.7]'

@@ -15,6 +15,7 @@ import { AlertsMenu } from "../alerts/AlertsMenu";
 import { SupportMenu } from "../shared/SupportMenu";
 import { AppLogo } from "../../assets/icons/AppLogo";
 import type { DeviceAlerts } from "../../hooks/useDeviceAlerts";
+import { APP_VERSION } from "../../lib/appVersion";
 
 interface TopBarProps {
   connectionState: DishConnectionState;
@@ -75,6 +76,7 @@ export function TopBar({
       <div className='flex min-w-0 items-center gap-[11px]'>
         <AppLogo size={28} className='flex-none' />
         <span className='text-[17px] font-bold tracking-[0.16em]'>Dishylink</span>
+        <span className='font-mono text-[10px] text-ink-muted tabular-nums'>v{APP_VERSION}</span>
       </div>
       <div className='flex flex-none flex-wrap items-center justify-end gap-3'>
         <div className='flex items-center gap-2.5'>

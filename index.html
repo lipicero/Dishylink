@@ -4,16 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dishylink — Starlink Companion (Unofficial)</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- App sets data-theme in an effect, which lands after the first paint — on a
-         dark-by-default dashboard that showed as a white flash on every load. Same
-         key, same default and same resolution of "system" as src/lib/theme.ts. -->
+    <style>
+      html {
+        min-height: 100%;
+        background: #000;
+        color-scheme: dark;
+      }
+
+      html[data-theme="light"] {
+        background: #f4f3ee;
+        color-scheme: light;
+      }
+
+      body {
+        min-height: 100vh;
+        margin: 0;
+        background: #000;
+        color: #fff;
+      }
+
+      html[data-theme="light"] body {
+        background: #f4f3ee;
+        color: #111110;
+      }
+    </style>
+    <!-- Resolve the saved theme before external stylesheets and the app module load. -->
     <script>
       (function () {
         var stored = localStorage.getItem("dishylink-theme") || "dark";
@@ -25,6 +40,13 @@
             : stored;
       })();
     </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
   </head>
   <body>
     <div id="root"></div>

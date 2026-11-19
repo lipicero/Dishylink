@@ -10,6 +10,8 @@ import type { TelemetrySample } from "@core/telemetry";
 
 const RECENT_AVERAGE_MS = 60_000;
 const SPARKLINE_MS = 90_000;
+const SPARKLINE_BUCKET_MS = 3_000;
+const SPARKLINE_BUCKET_COUNT = SPARKLINE_MS / SPARKLINE_BUCKET_MS;
 const POWER_BUCKET_MEAN_MS = 5_000;
 const POWER_BUCKET_FALLBACK_MS = 60_000;
 
@@ -29,12 +31,12 @@ export function hasRecentReadings(samples: TelemetrySample[], nowMs: number): bo
 }
 
 /**
- * The last 90 seconds of a series, for the spark line on a stat tile.
+ * The last 90 seconds of a series, grouped into epoch-aligned 3-second buckets.
  *
  * `windowEndMs` caps the newest edge: a live tile leaves it open (the default),
- * so the trace runs to the freshest sample. A tile whose figure is quantized to a
- * bucket boundary passes the boundary here too, so the trace's newest point steps
- * with the figure instead of creeping ahead of it every second.
+ * so the trace includes the current partial bucket. Completed buckets keep their
+ * values and positions as new samples arrive; a tile whose figure is quantized to
+ * a bucket boundary passes that boundary here too.
  */
 export function sparklineFrom(
   samples: TelemetrySample[],
@@ -42,13 +44,24 @@ export function sparklineFrom(
   nowMs: number,
   windowEndMs = Infinity,
 ) {
-  const floorMs = nowMs - SPARKLINE_MS;
-  let firstVisible = samples.length;
-  while (firstVisible > 0 && samples[firstVisible - 1].timestampMs >= floorMs) firstVisible--;
-  let lastVisible = samples.length;
-  while (lastVisible > firstVisible && samples[lastVisible - 1].timestampMs >= windowEndMs)
-    lastVisible--;
-  return samples.slice(firstVisible, lastVisible).map(getValue);
+  const endMs = Math.min(nowMs, windowEndMs);
+  const lastBucketKey = Math.ceil(endMs / SPARKLINE_BUCKET_MS) - 1;
+  const firstBucketKey = lastBucketKey - SPARKLINE_BUCKET_COUNT + 1;
+  const startMs = firstBucketKey * SPARKLINE_BUCKET_MS;
+  const sums = Array<number>(SPARKLINE_BUCKET_COUNT).fill(0);
+  const counts = Array<number>(SPARKLINE_BUCKET_COUNT).fill(0);
+
+  for (const sample of samples) {
+    if (sample.timestampMs < startMs || sample.timestampMs >= endMs) continue;
+    const bucketIndex = Math.floor(sample.timestampMs / SPARKLINE_BUCKET_MS) - firstBucketKey;
+    const value = getValue(sample);
+    if (value === null || !Number.isFinite(value)) continue;
+    sums[bucketIndex] += value;
+    counts[bucketIndex]++;
+  }
+
+  if (counts.every((count) => count === 0)) return [];
+  return sums.map((sum, index) => (counts[index] === 0 ? null : sum / counts[index]));
 }
 
 /**

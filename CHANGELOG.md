@@ -2,6 +2,23 @@
 
 All notable changes to Dishylink are documented here.
 
+## [1.3.2] - 2026-11-19
+
+### Linux
+
+- Debian-compatible Linux builds are now included in the release as `.deb`
+  packages.
+
+### Charts
+
+- Outage charts explain likely interruption causes, and the small live graphs
+  keep completed readings stable between updates.
+
+### Dashboard
+
+- The saved theme applies before the first paint. Skeleton cards appear while
+  the dashboard waits for its first live readings.
+
 ## [1.3.1] - 2026-11-02
 
 ### Fixed

@@ -74,6 +74,41 @@ describe("TelemetryChart outage bands", () => {
     expect(outageBandCount()).toBe(1);
   });
 
+  test("labels an outage band with its translated cause", async () => {
+    renderWith([
+      { startMs: NOW - 30_000, durationMs: 8_000, cause: "OUTAGE_OBSTRUCTED", severity: "warning" },
+    ]);
+    await waitFor(
+      () =>
+        [...document.querySelectorAll("svg text")].some(
+          (element) => element.textContent === "Sky blocked",
+        ) || null,
+      "outage cause label",
+    );
+    expect(
+      [...document.querySelectorAll("svg text")].map((element) => element.textContent),
+    ).toContain("Sky blocked");
+  });
+
+  test("labels textual thermal shutdowns and shades them as outages", async () => {
+    renderWith([
+      {
+        startMs: NOW - 30_000,
+        durationMs: 8_000,
+        cause: "thermal shutdown (ongoing)",
+        severity: "warning",
+      },
+    ]);
+    await waitFor(
+      () =>
+        [...document.querySelectorAll("svg text")].some(
+          (element) => element.textContent === "Thermal",
+        ) || null,
+      "thermal outage label",
+    );
+    expect(outageBandCount()).toBe(1);
+  });
+
   test("does not shade point-in-time router events", async () => {
     renderWith([
       {

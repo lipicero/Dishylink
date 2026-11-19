@@ -14,6 +14,7 @@ import { ObstructionCard } from "../obstruction/ObstructionCard";
 import { OutageLog } from "../alerts/OutageLog";
 import { SearchingHero } from "./SearchingHero";
 import { DishTerminalCard } from "./DishTerminalCard";
+import { DashboardSkeleton } from "./DashboardSkeleton";
 import { SegmentedControl } from "../ui/segmented-control";
 import { SectionCard } from "../ui/section-card";
 import {
@@ -149,6 +150,10 @@ export function DashboardView({
     );
   }
 
+  if (connectionState === "connecting" && status === null) {
+    return <DashboardSkeleton />;
+  }
+
   // popPingLatencyMs carries the same non-measurement sentinels (proto3's
   // omitted zero, an occasional negative) that readRouterLatencyMs already
   // filters for the router's own reading — the tile must reject them too.
@@ -158,6 +163,7 @@ export function DashboardView({
     {
       label: t("metrics.download"),
       value: liveDownlink.value,
+      valueClassName: "min-w-[3ch] tabular-nums",
       unit: liveDownlink.unit,
       caption: t("metrics.currentTraffic"),
       sparkValues: sparklines.downlink,
@@ -167,6 +173,7 @@ export function DashboardView({
     {
       label: t("metrics.upload"),
       value: liveUplink.value,
+      valueClassName: "min-w-[3ch] tabular-nums",
       unit: liveUplink.unit,
       caption: t("metrics.currentTraffic"),
       sparkValues: sparklines.uplink,

@@ -10,8 +10,6 @@ interface PromptDialogProps {
   actions?: ReactNode;
   /** Closing by ✕, Escape or the backdrop. */
   onDismiss: () => void;
-  /** For an ask that can come back: offers "Maybe later" and "Don't ask again". */
-  deferral?: { onLater: () => void; onNever: () => void };
 }
 
 export function PromptDialog({
@@ -21,7 +19,6 @@ export function PromptDialog({
   children,
   actions,
   onDismiss,
-  deferral,
 }: PromptDialogProps) {
   const { t } = useTranslation();
   const content = useRef<HTMLDivElement>(null);
@@ -79,25 +76,6 @@ export function PromptDialog({
               {children}
 
               {actions && <div className='mt-9 flex flex-col items-center gap-2.5'>{actions}</div>}
-
-              {deferral && (
-                <div className='mt-5 flex flex-col items-center gap-2'>
-                  <button
-                    type='button'
-                    onClick={deferral.onLater}
-                    className='cursor-pointer border-0 bg-transparent text-[13px] text-ink-secondary/80 transition-colors hover:text-ink'
-                  >
-                    {t("prompts.maybeLater")}
-                  </button>
-                  <button
-                    type='button'
-                    onClick={deferral.onNever}
-                    className='cursor-pointer border-0 bg-transparent text-[12px] text-ink-secondary/45 transition-colors hover:text-ink-secondary'
-                  >
-                    {t("prompts.dontAskAgain")}
-                  </button>
-                </div>
-              )}
             </div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Overlay>
