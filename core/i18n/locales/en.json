@@ -67,6 +67,9 @@
     "activeNow": "Active now",
     "privateVendor": "Private",
     "routerId": "Router ID: {{id}}",
+    "notSeenOnNetwork": "Not seen on this network",
+    "notSeenOnNetworkNote": "Recorded before the app knew which router they were on. A device from this network returns to the list above the next time it connects.",
+    "anotherNetwork": "Another network · {{id}}",
     "resetUsageFor": "Reset this month's usage for {{name}}",
     "deleteUsageFor": "Delete usage record for {{name}}"
   },

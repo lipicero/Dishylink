@@ -67,6 +67,9 @@
     "activeNow": "Ativo agora",
     "privateVendor": "Privado",
     "routerId": "ID do roteador: {{id}}",
+    "notSeenOnNetwork": "Não visto nesta rede",
+    "notSeenOnNetworkNote": "Registrado antes de o aplicativo saber em qual roteador estavam. Um dispositivo desta rede volta à lista acima na próxima conexão.",
+    "anotherNetwork": "Outra rede · {{id}}",
     "resetUsageFor": "Redefinir o uso deste mês de {{name}}",
     "deleteUsageFor": "Excluir o registro de uso de {{name}}"
   },

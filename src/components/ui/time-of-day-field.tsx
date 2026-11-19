@@ -140,7 +140,7 @@ function StepColumn({
           ref={field}
           type='number'
           value={draft}
-          aria-label={t(unit === "hour" ? "Hour" : "Minute")}
+          aria-label={t(unit === "hour" ? "time.hourUnit" : "time.minuteUnit")}
           onChange={(event) => setDraft(event.target.value)}
           onBlur={commit}
           onKeyDown={(event) => {

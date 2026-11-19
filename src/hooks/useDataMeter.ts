@@ -301,6 +301,12 @@ async function loadMeteredKeys(): Promise<void> {
     const announcing = new Set<string>();
     const nextTripped = rules.filter((rule) => {
       if (rule.reachedAtMs === undefined) return false;
+      if (
+        rule.countdownMs === undefined &&
+        !(rule.reached ?? rule.usageBytes >= rule.allocationBytes)
+      ) {
+        return false;
+      }
       const subject = announcementSubject(rule);
       if (announcing.has(subject)) return false;
       announcing.add(subject);

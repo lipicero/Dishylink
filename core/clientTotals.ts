@@ -52,6 +52,7 @@ export interface ClientTotal {
   /** The (vendor-masked) MAC. Kept as re-anchoring evidence, never the key. */
   macAddress: string;
   name?: string;
+  ipAddress?: string;
   /** Authoritative cumulative bytes this billing month, across every reconnect. */
   rxBytes: number;
   txBytes: number;
@@ -70,6 +71,8 @@ export interface TotalState {
   clientId?: number;
   macAddress: string;
   name?: string;
+  /** Last IP address reported by the router. */
+  ipAddress?: string;
   /** The router's per-client hash, when it sent one. Kept as re-anchoring
    *  evidence that outlives a MAC change: unlike the MAC it is not something the
    *  device rotates, and unlike clientId it is not reissued by this router on a
@@ -464,8 +467,13 @@ export class ClientTotalsCore {
     liveKeys: Set<string>,
     captiveClientId?: string,
     selfTraffic?: { receivedBytes: number; sentBytes: number },
+    ipAddressOrRouterId?: string,
     routerId?: string,
   ): void {
+    const ipAddress = ipAddressOrRouterId?.startsWith("Router-") ? undefined : ipAddressOrRouterId;
+    const observedRouterId = ipAddressOrRouterId?.startsWith("Router-")
+      ? ipAddressOrRouterId
+      : routerId;
     // An identity the user merged away routes into its survivor however often it
     // comes back. An adoption's alias does not: that one is inferred, and the old
     // id reporting again is evidence against it.
@@ -474,7 +482,7 @@ export class ClientTotalsCore {
     let state = this.states.get(key);
     // clientId is issued per router. The same number on another kit is not this
     // device, and adding its counter would bill that network's traffic here.
-    if (state?.routerId && routerId && state.routerId !== routerId) return;
+    if (state?.routerId && observedRouterId && state.routerId !== observedRouterId) return;
     if (!state)
       state = this.adoptOrCreate(
         clientId,
@@ -484,10 +492,12 @@ export class ClientTotalsCore {
         liveKeys,
         key,
         captiveClientId,
-        routerId,
+        ipAddress,
+        observedRouterId,
       );
     if (captiveClientId) state.captiveClientId = captiveClientId;
-    if (routerId) state.routerId ??= routerId;
+    if (ipAddress) state.ipAddress = ipAddress;
+    if (observedRouterId) state.routerId ??= observedRouterId;
 
     state.selfTrafficDebtRx = (state.selfTrafficDebtRx ?? 0) + (selfTraffic?.receivedBytes ?? 0);
     state.selfTrafficDebtTx = (state.selfTrafficDebtTx ?? 0) + (selfTraffic?.sentBytes ?? 0);
@@ -559,6 +569,7 @@ export class ClientTotalsCore {
     liveKeys: Set<string>,
     key: string,
     captiveClientId?: string,
+    ipAddress?: string,
     routerId?: string,
   ): TotalState {
     // The router's own per-client hash, when both buckets carry one, settles
@@ -609,6 +620,8 @@ export class ClientTotalsCore {
       prevRx: 0,
       prevTx: 0,
       lastPollMs: 0,
+      ipAddress,
+      routerId,
     };
     this.states.set(key, fresh);
     return fresh;
@@ -872,6 +885,7 @@ export class ClientTotalsCore {
       clientId: s.clientId,
       macAddress: s.macAddress,
       name: s.name,
+      ipAddress: s.ipAddress,
       rxBytes: monthlyRx(s),
       txBytes: monthlyTx(s),
       sinceMs: s.sinceMs,

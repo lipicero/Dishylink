@@ -123,10 +123,8 @@ export function DeviceUsageList() {
       <UsageRows totals={here} nowMs={nowMs} onReset={reset} onRemove={remove} scroll />
       {unseen.length > 0 && (
         <UsageSection
-          title={t("Not seen on this network")}
-          note={t(
-            "Recorded before the app knew which router they were on. A device from this network returns to the list above the next time it connects.",
-          )}
+          title={t("devices.notSeenOnNetwork")}
+          note={t("devices.notSeenOnNetworkNote")}
         >
           <UsageRows totals={unseen} nowMs={nowMs} onReset={reset} onRemove={remove} />
         </UsageSection>
@@ -134,7 +132,7 @@ export function DeviceUsageList() {
       {[...others.entries()].map(([routerId, group]) => (
         <UsageSection
           key={routerId}
-          title={t("Another network · {id}", { id: shortRouterId(routerId) })}
+          title={t("devices.anotherNetwork", { id: shortRouterId(routerId) })}
         >
           <UsageRows totals={group} nowMs={nowMs} onReset={reset} onRemove={remove} />
         </UsageSection>

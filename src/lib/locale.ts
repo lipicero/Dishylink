@@ -38,6 +38,7 @@ function publishLocaleChange(): void {
 // beats falling to English when the first is one we don't.
 function detectBrowserLocale(): SupportedLocale {
   if (typeof navigator === "undefined") return DEFAULT_LOCALE;
+  if (navigator.userAgent?.includes("Node.js")) return DEFAULT_LOCALE;
   const preferred = navigator.languages?.length ? navigator.languages : [navigator.language];
   return localeFromLanguageTags(preferred);
 }
