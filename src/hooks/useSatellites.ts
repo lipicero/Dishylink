@@ -15,13 +15,10 @@ import {
 } from "../components/obstruction/obstructionFrame";
 import { chooseServingCandidate, type ServingHold } from "../lib/servingSlot";
 import {
-  loadStarlinkTles,
-  StarlinkTracker,
-  EphemerisError,
-  SERVING_ELEVATION_FLOOR_DEG,
   type EphemerisFailure,
   type ObserverLocation,
   type SatelliteSky,
+  type StarlinkTracker,
 } from "../lib/satellites";
 
 const COARSE_PASS_MS = 60_000;
@@ -106,6 +103,7 @@ export function useSatellites(
   obstructionMap: DishObstructionMapJson | null,
   dishModel: DishModel = "unknown",
   boresightAzimuthDeg = 0,
+  enabled = true,
 ): SatelliteFeed {
   const [stats, setStats] = useState<SatelliteStats>(EMPTY_STATS);
   const [load, setLoad] = useState<EphemerisLoad>(LOADING);
@@ -131,17 +129,24 @@ export function useSatellites(
   const errorReason = current.reason;
 
   useEffect(() => {
-    if (!hasLocation) return;
+    if (!hasLocation || !enabled) return;
     let disposed = false;
     let hold: ServingHold | null = null;
     const timerIds: number[] = [];
     const retryIds: number[] = [];
 
     const start = async (attempt: number) => {
+      let satelliteModule: typeof import("../lib/satellites") | null = null;
+      if (attempt === 0) {
+        setLoad({ locationKey, state: "loading", reason: null });
+        setStats(EMPTY_STATS);
+      }
       try {
-        const tleRecords = await loadStarlinkTles();
+        const satellite = await import("../lib/satellites");
+        satelliteModule = satellite;
+        const tleRecords = await satellite.loadStarlinkTles();
         if (disposed) return;
-        const tracker = new StarlinkTracker(tleRecords, {
+        const tracker = new satellite.StarlinkTracker(tleRecords, {
           latitudeDeg: latitude,
           longitudeDeg: longitude,
           altitudeM: altitude,
@@ -169,7 +174,7 @@ export function useSatellites(
             ...previousStats,
             inViewCount: inView.length,
             serviceableCount: inView.filter(
-              (sky) => sky.elevationDeg >= SERVING_ELEVATION_FLOOR_DEG,
+              (sky) => sky.elevationDeg >= satellite.SERVING_ELEVATION_FLOOR_DEG,
             ).length,
             servingCandidate: serving.candidate,
             constellationSize: tracker.constellationSize,
@@ -196,7 +201,10 @@ export function useSatellites(
         setLoad({
           locationKey,
           state: "error",
-          reason: error instanceof EphemerisError ? error.reason : "source",
+          reason:
+            satelliteModule && error instanceof satelliteModule.EphemerisError
+              ? error.reason
+              : "source",
         });
         // Keep trying rather than parking here until the user reloads: the
         // usual cause is the source being briefly slow or unreachable, which
@@ -216,8 +224,10 @@ export function useSatellites(
       timerIds.forEach((timerId) => window.clearInterval(timerId));
       retryIds.forEach((retryId) => window.clearTimeout(retryId));
       trackerRef.current = null;
+      setLoad(LOADING);
+      setStats(EMPTY_STATS);
     };
-  }, [hasLocation, latitude, longitude, altitude, locationKey]);
+  }, [enabled, hasLocation, latitude, longitude, altitude, locationKey]);
 
   const sampleSky = useCallback(() => trackerRef.current?.finePass() ?? [], []);
 

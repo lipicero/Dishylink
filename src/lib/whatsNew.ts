@@ -2,7 +2,7 @@ import type { TranslationKey } from "@core/i18n/resources";
 
 // The newest release with highlights in the catalog. Bumped only when highlights
 // are added, so a patch with nothing to announce shows nothing.
-export const WHATS_NEW_RELEASE = "1.3.2";
+export const WHATS_NEW_RELEASE = "1.4.0";
 
 /** One line of the notes. A row without a title carries on from the row above it. */
 export interface Highlight {
@@ -12,6 +12,10 @@ export interface Highlight {
 
 // Newest release first, the first being WHATS_NEW_RELEASE.
 const HIGHLIGHTS_BY_RELEASE: { release: string; items: Highlight[] }[] = [
+  {
+    release: "1.4.0",
+    items: [{ title: "whatsNew.screensTitle", body: "whatsNew.screensBody" }],
+  },
   {
     release: "1.3.2",
     items: [

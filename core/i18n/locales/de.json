@@ -441,6 +441,8 @@
   },
   "whatsNew": {
     "title": "Neu in Dishylink {{version}}",
+    "screensTitle": "Nur der geöffnete Bildschirm wird geladen.",
+    "screensBody": "Die Bereiche werden erst beim Öffnen geladen. Die Satellitenverfolgung und ihre Daten starten erst, wenn Sie die Himmelsansicht öffnen.",
     "linuxTitle": "Debian-Paket für Linux.",
     "linuxBody": "Installieren Sie Dishylink mit einem .deb-Paket unter Debian und kompatiblen Linux-Distributionen.",
     "steadierChartsTitle": "Stabilere Diagramme und erklärte Ausfälle.",

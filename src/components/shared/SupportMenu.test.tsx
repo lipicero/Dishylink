@@ -13,7 +13,7 @@ test("keeps the credits heart and shows the app version beside its changelog", a
   (trigger as HTMLButtonElement).click();
   await new Promise((resolve) => setTimeout(resolve, 100));
 
-  expect(document.body.textContent).toContain("v1.3.2");
+  expect(document.body.textContent).toContain("v1.4.0");
   expect(document.body.textContent).toContain("Changelog");
   expect(document.body.textContent).toContain("A fork by Matías Ceroleni");
   expect(document.body.textContent).not.toContain("Jobmate");

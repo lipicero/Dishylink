@@ -441,6 +441,8 @@
   },
   "whatsNew": {
     "title": "What’s new in Dishylink {{version}}",
+    "screensTitle": "Only the screen you open loads.",
+    "screensBody": "Panels now load when you open them. Satellite tracking and its data start only when you open the sky view.",
     "linuxTitle": "Debian package for Linux.",
     "linuxBody": "Install Dishylink on Debian and compatible Linux distributions with a .deb package.",
     "steadierChartsTitle": "Steadier charts and outage details.",

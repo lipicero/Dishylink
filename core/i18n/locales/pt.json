@@ -448,6 +448,8 @@
   },
   "whatsNew": {
     "title": "Novidades do Dishylink {{version}}",
+    "screensTitle": "Só a tela aberta é carregada.",
+    "screensBody": "Os painéis são carregados ao serem abertos. O rastreamento e os dados dos satélites só começam quando a visão do céu é aberta.",
     "linuxTitle": "Pacote Debian para Linux.",
     "linuxBody": "Instale o Dishylink no Debian e em distribuições Linux compatíveis usando um pacote .deb.",
     "steadierChartsTitle": "Gráficos mais estáveis e interrupções explicadas.",

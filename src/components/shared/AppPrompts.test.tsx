@@ -44,7 +44,7 @@ describe("what's new after an update", () => {
   test("speaks the app's language", async () => {
     setLocale("es");
     render(<AppPrompts />);
-    await waitForText("Novedades de Dishylink 1.3.2");
+    await waitForText("Novedades de Dishylink 1.4.0");
     expect(text()).toContain("Paquete Debian para Linux.");
     expect(text()).not.toContain("Jobmate");
     button("Entendido").click();
@@ -61,7 +61,7 @@ describe("what's new after an update", () => {
 
   test("shows once, and stays gone after Got it", async () => {
     render(<AppPrompts />);
-    await waitForText("What’s new in Dishylink 1.3.2");
+    await waitForText("What’s new in Dishylink 1.4.0");
     expect(text()).toContain("Full release notes");
 
     button("Got it").click();

@@ -2,6 +2,14 @@
 
 All notable changes to Dishylink are documented here.
 
+## [1.4.0] - 2026-11-19
+
+### Performance
+
+- Secondary screens now load only when opened, instead of loading with the
+  dashboard.
+- Satellite tracking and ephemeris downloads now wait until the sky view opens.
+
 ## [1.3.2] - 2026-11-19
 
 ### Linux

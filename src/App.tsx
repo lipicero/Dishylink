@@ -1,4 +1,12 @@
-import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import {
+  lazy,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { useDishTelemetry } from "./hooks/useDishTelemetry";
 import { useLanPresence } from "./hooks/useLanPresence";
@@ -22,15 +30,9 @@ import { TopBar } from "./components/dashboard/TopBar";
 import { AppToolbar } from "./components/toolbar/AppToolbar";
 import { DashboardView } from "./components/dashboard/DashboardView";
 import { windowTail } from "./lib/telemetryWindow";
-import { SatelliteView } from "./components/satellite/SatelliteView";
 import { DishTerminalCard } from "./components/dashboard/DishTerminalCard";
 import { DetailsModal } from "./components/ui/details-modal";
-import { SpeedTestPanel } from "./components/speed-test/SpeedTestCard";
-import { AlignmentPanel } from "./components/alignment/AlignmentCard";
-import { DataUsagePanel } from "./components/data-usage/DataUsagePanel";
-import { NetworkPanel } from "./components/network/NetworkPanel";
-import { AccountPanel } from "./components/account/AccountPanel";
-import { SettingsModal } from "./components/settings/SettingsModal";
+import { Loading } from "./components/ui/loading";
 import { useRouterNetwork } from "./hooks/useRouterNetwork";
 import { useRouterUnreachable } from "./hooks/useRouterUnreachable";
 import { useLiveReadings } from "./hooks/useLiveReadings";
@@ -38,6 +40,46 @@ import { formatThroughput } from "./lib/format";
 import { TooltipProvider } from "./components/ui/tooltip";
 import { useTheme } from "./hooks/useTheme";
 import { dishModelFor } from "./lib/dishMesh";
+
+const SatelliteView = lazy(() =>
+  import("./components/satellite/SatelliteView").then(({ SatelliteView }) => ({
+    default: SatelliteView,
+  })),
+);
+const SpeedTestPanel = lazy(() =>
+  import("./components/speed-test/SpeedTestCard").then(({ SpeedTestPanel }) => ({
+    default: SpeedTestPanel,
+  })),
+);
+const AlignmentPanel = lazy(() =>
+  import("./components/alignment/AlignmentCard").then(({ AlignmentPanel }) => ({
+    default: AlignmentPanel,
+  })),
+);
+const DataUsagePanel = lazy(() =>
+  import("./components/data-usage/DataUsagePanel").then(({ DataUsagePanel }) => ({
+    default: DataUsagePanel,
+  })),
+);
+const NetworkPanel = lazy(() =>
+  import("./components/network/NetworkPanel").then(({ NetworkPanel }) => ({
+    default: NetworkPanel,
+  })),
+);
+const AccountPanel = lazy(() =>
+  import("./components/account/AccountPanel").then(({ AccountPanel }) => ({
+    default: AccountPanel,
+  })),
+);
+const SettingsModal = lazy(() =>
+  import("./components/settings/SettingsModal").then(({ SettingsModal }) => ({
+    default: SettingsModal,
+  })),
+);
+
+function PanelLoading() {
+  return <Loading className='min-h-48' size={24} />;
+}
 
 export default function App() {
   const { t } = useTranslation();
@@ -60,6 +102,10 @@ export default function App() {
     },
     [setOpenPanel],
   );
+  const closeNetworkPanel = useCallback(() => {
+    setNetworkDeviceKey(null);
+    setOpenPanel(null);
+  }, [setOpenPanel]);
   const notificationsOn = useSyncExternalStore(subscribeToNotifications, readNotificationsOn);
   const notificationsBlockedReason = useSyncExternalStore(
     subscribeToNotifications,
@@ -75,6 +121,7 @@ export default function App() {
     telemetry.obstructionMap,
     dishModelFor(telemetry.status),
     telemetry.status?.boresightAzimuthDeg ?? 0,
+    skyViewOpen,
   );
   useOutageNotifications(telemetry);
   const deviceAlerts = useDeviceAlerts(telemetry.status, telemetry.connectionState);
@@ -186,7 +233,9 @@ export default function App() {
       {/* Speed test modal */}
       {openPanel === "speedtest" && (
         <DetailsModal title={t("navigation.speedTest")} onClose={() => setOpenPanel(null)}>
-          <SpeedTestPanel samples={samples} status={status} />
+          <Suspense fallback={<PanelLoading />}>
+            <SpeedTestPanel samples={samples} status={status} />
+          </Suspense>
         </DetailsModal>
       )}
       {/* Alignment modal */}
@@ -196,12 +245,14 @@ export default function App() {
           onClose={() => setOpenPanel(null)}
           size='wide'
         >
-          <AlignmentPanel
-            status={status}
-            stale={telemetry.stale}
-            lastStatusAtMs={telemetry.lastStatusAtMs}
-            onOpenSkyView={openSkyView}
-          />
+          <Suspense fallback={<PanelLoading />}>
+            <AlignmentPanel
+              status={status}
+              stale={telemetry.stale}
+              lastStatusAtMs={telemetry.lastStatusAtMs}
+              onOpenSkyView={openSkyView}
+            />
+          </Suspense>
         </DetailsModal>
       )}
       {/* Data usage modal */}
@@ -211,7 +262,9 @@ export default function App() {
           onClose={() => setOpenPanel(null)}
           size='wide'
         >
-          <DataUsagePanel />
+          <Suspense fallback={<PanelLoading />}>
+            <DataUsagePanel />
+          </Suspense>
         </DetailsModal>
       )}
       {/* Account modal */}
@@ -221,37 +274,56 @@ export default function App() {
           onClose={() => setOpenPanel(null)}
           size='wide'
         >
-          <AccountPanel lanOnline={lanOnline} />
+          <Suspense fallback={<PanelLoading />}>
+            <AccountPanel lanOnline={lanOnline} />
+          </Suspense>
         </DetailsModal>
       )}
       {/* Network modal */}
       {openPanel === "network" && (
-        <NetworkPanel
-          network={routerNetwork}
-          unreachable={routerUnreachable}
-          initialSelectedKey={networkDeviceKey}
-          onClose={() => {
-            setNetworkDeviceKey(null);
-            setOpenPanel(null);
-          }}
-        />
+        <Suspense
+          fallback={
+            <DetailsModal title={t("navigation.network")} onClose={closeNetworkPanel} size='wide'>
+              <PanelLoading />
+            </DetailsModal>
+          }
+        >
+          <NetworkPanel
+            network={routerNetwork}
+            unreachable={routerUnreachable}
+            initialSelectedKey={networkDeviceKey}
+            onClose={closeNetworkPanel}
+          />
+        </Suspense>
       )}
       {/* Settings modal */}
       {openPanel === "settings" && (
-        <SettingsModal
-          onClose={() => setOpenPanel(null)}
-          status={status}
-          hardwareVersion={
-            telemetry.deviceInfo?.hardwareVersion ?? status?.deviceInfo?.hardwareVersion
+        <Suspense
+          fallback={
+            <DetailsModal
+              title={t("navigation.settings")}
+              onClose={() => setOpenPanel(null)}
+              size='wide'
+            >
+              <PanelLoading />
+            </DetailsModal>
           }
-          wifiConfig={routerNetwork.wifiConfig}
-          clients={routerNetwork.clients}
-          initialTab={settingsTab}
-          routerReachable={routerNetwork.routerReachable}
-          routerViaAccount={routerNetwork.wifiConfigViaAccount}
-          routerUnreachable={routerUnreachable}
-          onRouterConfigChanged={routerNetwork.refreshConfig}
-        />
+        >
+          <SettingsModal
+            onClose={() => setOpenPanel(null)}
+            status={status}
+            hardwareVersion={
+              telemetry.deviceInfo?.hardwareVersion ?? status?.deviceInfo?.hardwareVersion
+            }
+            wifiConfig={routerNetwork.wifiConfig}
+            clients={routerNetwork.clients}
+            initialTab={settingsTab}
+            routerReachable={routerNetwork.routerReachable}
+            routerViaAccount={routerNetwork.wifiConfigViaAccount}
+            routerUnreachable={routerUnreachable}
+            onRouterConfigChanged={routerNetwork.refreshConfig}
+          />
+        </Suspense>
       )}
       {/* Sky view (full-viewport) */}
       <AnimatePresence>
@@ -263,17 +335,25 @@ export default function App() {
             exit={{ opacity: 0 }}
             transition={{ duration: 0.22, ease: "easeOut" }}
           >
-            <SatelliteView
-              obstructionMap={telemetry.obstructionMap}
-              obstructionStats={status?.obstructionStats}
-              status={status}
-              stale={telemetry.stale}
-              satellites={satellites}
-              observerLocation={observerLocation}
-              onLocationSaved={onLocationSaved}
-              onClearLocation={onClearLocation}
-              onClose={() => setSkyViewOpen(false)}
-            />
+            <Suspense
+              fallback={
+                <div className='grid min-h-screen place-items-center bg-page'>
+                  <Loading size={28} />
+                </div>
+              }
+            >
+              <SatelliteView
+                obstructionMap={telemetry.obstructionMap}
+                obstructionStats={status?.obstructionStats}
+                status={status}
+                stale={telemetry.stale}
+                satellites={satellites}
+                observerLocation={observerLocation}
+                onLocationSaved={onLocationSaved}
+                onClearLocation={onClearLocation}
+                onClose={() => setSkyViewOpen(false)}
+              />
+            </Suspense>
           </motion.div>
         )}
       </AnimatePresence>

@@ -2,7 +2,8 @@
 // terminal shares, so the serving guess is made when the slot turns over and
 // held until the next, rather than re-picked on every sample.
 
-import { SERVING_ELEVATION_FLOOR_DEG, type SatelliteSky } from "./satellites";
+import type { SatelliteSky } from "./satellites";
+import { SERVING_ELEVATION_FLOOR_DEG } from "./satelliteConstants";
 
 export const HANDOFF_SLOT_MS = 15_000;
 

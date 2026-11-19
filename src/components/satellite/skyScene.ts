@@ -6,7 +6,8 @@
 // painted: stars, then terrain and dish, then satellites, then the dome dots last
 // so a dot in front of the dish stays visible and one behind it is hidden.
 
-import { advanceLookAngles, type SatelliteSky } from "../../lib/satellites";
+import type { SatelliteSky } from "../../lib/satellites";
+import { advanceLookAngles } from "../../lib/satelliteLookAngles";
 
 import { meshForModel } from "./dishModels";
 import { lookAt, multiply, perspective } from "./skyMath";
