@@ -39,6 +39,7 @@ export const SatelliteCallout = forwardRef<
             >
               {selected.sky.name.replace(/\s*\[DTC\]\s*/, "")}
             </span>
+            {selected.sky.generation && <Badge variant='spec'>{selected.sky.generation}</Badge>}
             {/\[DTC\]/.test(selected.sky.name) && <Badge variant='tag'>DTC</Badge>}
             <button
               className='ml-auto cursor-pointer border-0 bg-transparent pl-1 text-[15px] leading-none text-muted-foreground hover:text-foreground'
