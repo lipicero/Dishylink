@@ -48,6 +48,9 @@ export function useRouterAddressState(): [RouterAddress | null, (next: RouterAdd
         // A save that landed while this read was in flight is the newer value.
         if (saves === savesAtStart) publish(value);
       })
+      .catch(() => {
+        // A failed read leaves the row unset rather than showing an error body.
+      })
       .finally(() => {
         reading = null;
       });

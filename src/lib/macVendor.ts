@@ -25,7 +25,10 @@ export function subscribeToOuiRegistry(listener: () => void): () => void {
 /** Fetches the IEEE OUI registry once from the static asset. */
 export function ensureOuiLoaded(): Promise<void> {
   return (ouiLoad ??= fetch(`${import.meta.env.BASE_URL}oui.json`)
-    .then((response) => response.json())
+    .then((response) => {
+      if (!response.ok) throw new Error(`OUI registry request failed (${response.status})`);
+      return response.json();
+    })
     .then((registry: Record<string, string>) => {
       ouiRegistry = registry;
       for (const listener of registryListeners) listener();

@@ -524,13 +524,12 @@ export class DishClient {
     target: "dish" | "router" = "dish",
     options: { handleUrl?: string; protosetUrl?: string; protosetBytes?: Uint8Array } = {},
   ): Promise<DishClient> {
-    const protosetBytes = options.protosetBytes
-      ? options.protosetBytes
-      : new Uint8Array(
-          await (
-            await fetch(options.protosetUrl ?? dishHost.protosetUrl ?? "/dish.protoset")
-          ).arrayBuffer(),
-        );
+    let protosetBytes = options.protosetBytes;
+    if (!protosetBytes) {
+      const response = await fetch(options.protosetUrl ?? dishHost.protosetUrl ?? "/dish.protoset");
+      if (!response.ok) throw new Error(`dish.protoset request failed (${response.status})`);
+      protosetBytes = new Uint8Array(await response.arrayBuffer());
+    }
     const fileDescriptorSet = fromBinary(FileDescriptorSetSchema, protosetBytes);
     const registry = createFileRegistry(fileDescriptorSet);
     const requestSchema = registry.getMessage("SpaceX.API.Device.Request");

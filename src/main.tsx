@@ -57,6 +57,7 @@ if (desktop) {
 if (import.meta.env.DEV || !desktop) {
   const readAddresses = async () => {
     const response = await fetch("/router-address");
+    if (!response.ok) throw new Error(`Router address request failed (${response.status})`);
     return (await response.json()) as { router: string | null; routerDefault: string };
   };
   setRouterAddressHost({

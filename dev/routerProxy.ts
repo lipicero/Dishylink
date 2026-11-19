@@ -79,9 +79,26 @@ export function routerProxy(): Plugin {
           };
           if (req.method === "GET") return answer();
           if (req.method === "POST") {
-            const { address } = JSON.parse((await readBody(req)).toString("utf8") || "{}") as {
-              address?: string | null;
-            };
+            let address: string | null | undefined;
+            try {
+              const parsed: unknown = JSON.parse((await readBody(req)).toString("utf8") || "{}");
+              if (parsed === null || typeof parsed !== "object" || !("address" in parsed)) {
+                address = undefined;
+              } else {
+                const value = (parsed as { address: unknown }).address;
+                if (typeof value === "string" || value === null || value === undefined) {
+                  address = value;
+                } else {
+                  res.statusCode = 400;
+                  res.setHeader("content-type", "application/json");
+                  return res.end(JSON.stringify({ error: "invalid" }));
+                }
+              }
+            } catch {
+              res.statusCode = 400;
+              res.setHeader("content-type", "application/json");
+              return res.end(JSON.stringify({ error: "invalid" }));
+            }
             if (address === null || address === undefined || address === "") {
               rmSync(DEV_ROUTER_ADDRESS_FILE, { force: true });
               return answer();

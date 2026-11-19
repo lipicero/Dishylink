@@ -90,7 +90,10 @@ export function useDishTelemetry(): DishTelemetry {
   const [obstructionMap, setObstructionMap] = useState<DishObstructionMapJson | null>(null);
   const [dishLocation, setDishLocation] = useState<DishLocationJson | null>(null);
   const [locationDenied, setLocationDenied] = useState(false);
-  const accumulatorRef = useRef(new TelemetryAccumulator(SAMPLE_RETENTION_MS));
+  const accumulatorRef = useRef<TelemetryAccumulator | null>(null);
+  if (accumulatorRef.current === null) {
+    accumulatorRef.current = new TelemetryAccumulator(SAMPLE_RETENTION_MS);
+  }
 
   // Debounce offline: it trips only after the link has stayed unanswered for
   // STALE_AFTER_MS, and clears on reconnect — a blip's timer is cleared before it
@@ -160,7 +163,7 @@ export function useDishTelemetry(): DishTelemetry {
       try {
         const history = await client.getHistory(AbortSignal.timeout(4_000));
         if (disposed) return;
-        setSamples([...accumulatorRef.current.ingest(history, Date.now(), routerReadings)]);
+        setSamples([...accumulatorRef.current!.ingest(history, Date.now(), routerReadings)]);
         const events = decodeOutageEvents(history);
         setOutageEvents((previous) => (sameOutageEvents(previous, events) ? previous : events));
       } catch {
@@ -211,7 +214,7 @@ export function useDishTelemetry(): DishTelemetry {
         client = loadedClient;
         if (disposed) return;
         if (persistedSamples.length > 0) {
-          setSamples([...accumulatorRef.current.seed(persistedSamples)]);
+          setSamples([...accumulatorRef.current!.seed(persistedSamples)]);
         }
         client
           .getDeviceInfo(AbortSignal.timeout(4_000))

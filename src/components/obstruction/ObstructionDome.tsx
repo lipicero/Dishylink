@@ -39,6 +39,13 @@ export function ObstructionDome({
   useEffect(() => {
     surveyRef.current = survey;
   }, [survey]);
+  // Latest callback, so the scene effect can hand the scene up without listing
+  // the callback as a dependency — that would tear the WebGL scene down on
+  // every parent render.
+  const onSceneChangeRef = useRef(onSceneChange);
+  useEffect(() => {
+    onSceneChangeRef.current = onSceneChange;
+  }, [onSceneChange]);
   const hasSurvey = survey !== null;
 
   useEffect(() => {
@@ -53,15 +60,13 @@ export function ObstructionDome({
     });
     if (!built) return;
     setScene(built);
+    onSceneChangeRef.current?.(built);
     return () => {
+      onSceneChangeRef.current?.(null);
       built.dispose();
       setScene(null);
     };
   }, [hasSurvey]);
-
-  useEffect(() => {
-    onSceneChange?.(scene);
-  }, [scene, onSceneChange]);
 
   useEffect(() => {
     if (survey) scene?.setSurvey(survey);

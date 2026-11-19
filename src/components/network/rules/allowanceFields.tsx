@@ -1,7 +1,7 @@
 // The allowance, timer and membership controls, shared by every form that sets a
 // limit, so a rule and the group it can become are never worded two ways.
 
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   CalendarClockIcon,
@@ -322,6 +322,7 @@ function MemberModeChoice({
 
 export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
   const { t, i18n } = useTranslation();
+  const resetDayId = useId();
   const { allocationText, setAllocationText, ceiling, setCeiling, kind, billingDay } = draft;
   if (draft.timer) return <CountdownFields draft={draft} />;
   return (
@@ -427,10 +428,13 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
         </div>
       )}
       {kind === "monthly" && (
-        <label className='block space-y-1.5'>
-          <span className='text-[12px] font-medium text-foreground'>{t("rules.resetsOnDay")}</span>
+        <div className='space-y-1.5'>
+          <label htmlFor={resetDayId} className='block text-[12px] font-medium text-foreground'>
+            {t("rules.resetsOnDay")}
+          </label>
           <div className='relative'>
             <Input
+              id={resetDayId}
               value={draft.dayText}
               inputMode='numeric'
               onChange={(event) => draft.setDayText(event.target.value.replace(/[^0-9]/g, ""))}
@@ -456,7 +460,7 @@ export function AllowanceFields({ draft }: { draft: AllowanceDraft }) {
               </button>
             </div>
           </div>
-        </label>
+        </div>
       )}
     </>
   );

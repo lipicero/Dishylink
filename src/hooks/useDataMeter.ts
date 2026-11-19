@@ -267,13 +267,15 @@ async function loadMeteredKeys(): Promise<void> {
   try {
     const response = await apiRequest("/api/clients/meters");
     if (!response.ok) return;
+    // Nobody is listening: skip the parse. A tab that closed while the request
+    // was in flight has nothing to update.
+    if (meteredListeners.size === 0) return;
     const body = (await response.json()) as {
       rules?: MeterRuleView[];
       pauseEnforceable?: boolean;
     };
     const rules = body.rules ?? [];
     const nextEnforceable = body.pauseEnforceable === true;
-    if (meteredListeners.size === 0) return;
     // Folded per device, not per rule: a device can be named by several rules,
     // and its row shows the strongest mark among them rather than whichever
     // happened to be read last.

@@ -40,7 +40,7 @@ export function CustomDnsSection({
 
   // Follow the router when it reports something different, so a change made in
   // the official app is not silently overwritten by a stale field.
-  const [shown, setShown] = useState(nameservers.join(","));
+  const [shown, setShown] = useState(() => nameservers.join(","));
   if (shown !== nameservers.join(",")) {
     setShown(nameservers.join(","));
     setFields(Array.from({ length: MAX_NAMESERVERS }, (_, index) => nameservers[index] ?? ""));

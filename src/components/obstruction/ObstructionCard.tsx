@@ -1,6 +1,6 @@
 // The dashboard's Obstructions card: the dish's view of its own sky, full-bleed.
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Callout } from "../ui/callout";
 import { Loading } from "../ui/loading";
@@ -38,10 +38,12 @@ export function ObstructionCard({
   // The dome drifts on its own; this holds it still for anyone reading the map
   // rather than watching it. Seeded from the scene so a rebuilt scene's button
   // starts honest.
-  const [scene, setScene] = useState<SkyScene | null>(null);
+  // The scene is only driven from the pause control, never drawn, so a ref
+  // keeps a rebuilt scene from re-rendering the card.
+  const sceneRef = useRef<SkyScene | null>(null);
   const [rotating, setRotating] = useState(true);
   const handleScene = useCallback((next: SkyScene | null) => {
-    setScene(next);
+    sceneRef.current = next;
     if (next) setRotating(next.isRotating());
   }, []);
   return (
@@ -80,7 +82,10 @@ export function ObstructionCard({
             <SkyControl
               label={rotating ? t("obstruction.pauseRotation") : t("obstruction.resumeRotation")}
               pressed={!rotating}
-              onClick={() => scene && setRotating(scene.toggleRotation())}
+              onClick={() => {
+                const scene = sceneRef.current;
+                if (scene) setRotating(scene.toggleRotation());
+              }}
             >
               <PauseIcon playing={rotating} />
             </SkyControl>

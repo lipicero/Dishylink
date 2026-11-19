@@ -258,10 +258,16 @@ export function StarlinkSettingsTab({
             <button
               className={actionButton("subtle")}
               onClick={() => {
-                void onCopyDiagnostics().then((outcome) => {
-                  setCopyState(outcome);
-                  window.setTimeout(() => setCopyState("idle"), 2500);
-                });
+                void onCopyDiagnostics()
+                  .then((outcome) => {
+                    setCopyState(outcome);
+                  })
+                  .catch(() => {
+                    setCopyState("failed");
+                  })
+                  .finally(() => {
+                    window.setTimeout(() => setCopyState("idle"), 2500);
+                  });
               }}
             >
               {copyState === "copied"
